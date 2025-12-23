@@ -3,6 +3,7 @@
 #include <stdint.h>
 #include <float.h>
 #include <ctype.h>
+#include <string>
 
 // Global variables (addresses in hp.exe)
 char g_lpCmdLine1[512]; // 0xc82b88
@@ -32,8 +33,6 @@ STICKYKEYS g_stickyKeys; // 0x8afc44
 TOGGLEKEYS g_toggleKeys; // 0x8afc4c
 FILTERKEYS g_filterKeys; // 0x8afc54
 
-// Internal functions used in WinMain (addresses in hp.exe)
-void sub_60deb0(int restore); // 0x60deb0
 
 // 0x00617d70
 // Parses a single token from a string, handling quoted strings.
@@ -127,7 +126,53 @@ void sub_617c60() {
     }
 }
 
-int sub_60ce60(const char* section, const char* key, const char* appName, int defaultValue) { return defaultValue; } // 0x60ce60
+// 0x0060ce20
+// Helper function that wraps RegQueryValueExA for reading string values.
+bool sub_60ce20(HKEY hKey, const char* lpValueName, char* lpData, LPDWORD lpcbData) {
+    DWORD type = REG_SZ;
+    return RegQueryValueExA(hKey, lpValueName, NULL, &type, (LPBYTE)lpData, lpcbData) == ERROR_SUCCESS;
+}
+
+// 0x0060cc70
+// Helper function for registry-related error logging (stub).
+void sub_60cc70(const char* section, const char* key, const char* appName, const char* message) {}
+
+// 0x0060ce60
+// Reads an integer value from the registry. It first attempts to read from
+// HKEY_CURRENT_USER and falls back to HKEY_LOCAL_MACHINE if not found.
+// The registry path is "Software\Electronic Arts\<appName>\<section>".
+int sub_60ce60(const char* section, const char* key, const char* appName, int defaultValue) {
+    std::string path = "Software\\Electronic Arts\\";
+    if (appName && *appName) {
+        path += appName;
+        path += "\\";
+    }
+    path += section;
+
+    HKEY hKey;
+    int result = defaultValue;
+    char buffer[256];
+    DWORD bufferSize = sizeof(buffer);
+
+    // 0x60cfab: Attempt to open the key in HKEY_CURRENT_USER.
+    if (RegOpenKeyExA(HKEY_CURRENT_USER, path.c_str(), 0, KEY_READ, &hKey) == ERROR_SUCCESS) {
+        // 0x60cfc9: Call helper to read the value as a string and convert to int.
+        if (sub_60ce20(hKey, key, buffer, &bufferSize)) {
+            result = atoi(buffer);
+        }
+        RegCloseKey(hKey); // 0x60d07b
+    } 
+    // 0x60cff5: Fallback to HKEY_LOCAL_MACHINE if not found in HKCU.
+    else if (RegOpenKeyExA(HKEY_LOCAL_MACHINE, path.c_str(), 0, KEY_READ, &hKey) == ERROR_SUCCESS) {
+        if (sub_60ce20(hKey, key, buffer, &bufferSize)) {
+            result = atoi(buffer);
+        }
+        RegCloseKey(hKey);
+    }
+
+    return result;
+}
+
 bool sub_60da90() { return true; } // 0x60da90
 int sub_60db20(void* this_ptr, HINSTANCE hInstance, LPSTR lpCmdLine, int nShowCmd) { return 1; } // 0x60db20
 void sub_617bf0(const char* cmdLine, const char* key, int* outValue) {} // 0x617bf0
