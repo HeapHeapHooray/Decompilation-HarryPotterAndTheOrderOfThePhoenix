@@ -904,7 +904,60 @@ void sub_67d0c0() {
 
     sub_674430();
 }
-void sub_66e080() {} // 0x66e080
+uint8_t g_byte_8ae1ff = 0; // 0x8ae1ff
+uint32_t g_dword_8ae200 = 0; // 0x8ae200
+void* g_ptr_bf19a8 = NULL; // 0xbf19a8
+uint32_t g_dword_bf1994 = 0; // 0xbf1994
+uint32_t g_dword_8ae1ec = 0; // 0x8ae1ec
+uint32_t g_array_8da10c[32] = {0}; // 0x8da10c
+uint32_t g_dword_8ae204 = 0; // 0x8ae204
+uint32_t g_dword_bf194c = 0; // 0xbf194c
+
+// 0x0066e080
+// Calculates a memory budget or quality setting (g_dword_8ae204) based on
+// available texture memory and various global flags.
+void sub_66e080() {
+    uint32_t mem = g_dword_bf193c;
+    uint32_t budget;
+
+    // 0xebe85b: Check primary condition flag
+    if (g_byte_8ae1ff != 0) {
+        // 0xebe86a: Case where g_byte_8ae1ff is set
+        uint8_t* pObj = (uint8_t*)g_ptr_bf19a8;
+        uint32_t val = *(uint32_t*)(pObj + g_dword_8ae200 * 0x584 + 0x474);
+        
+        // 0xebe882: Check specific bit in object field
+        budget = (val & 0x800) ? 0x40 : 0x20;
+        
+        // 0xebe891: Check if another flag/count is above threshold
+        if (g_dword_bf1994 >= 2) {
+            budget = 0x80;
+        }
+        
+        // 0xebe8cb: Shift budget by value at 0x8ae1ec
+        budget <<= g_dword_8ae1ec;
+    } else {
+        // 0xebe8a7: Default case
+        budget = g_array_8da10c[g_dword_8ae1ec];
+        
+        // 0xebe8b3: Double budget if memory >= 384MB
+        if (mem >= 0x180) budget <<= 1;
+        
+        // 0xebe8c0: Double budget if memory >= 512MB
+        if (mem >= 0x200) budget <<= 1;
+    }
+
+    // 0xebe8cd: Halve budget if memory <= 64MB
+    if (mem <= 0x40) budget >>= 1;
+    
+    // 0xebe8db: Store result
+    g_dword_8ae204 = budget;
+
+    // 0xebe8e0: Final override check
+    if (g_dword_bf194c != 0) {
+        g_dword_8ae204 = g_dword_bf194c;
+    }
+}
 void sub_79a712(int enable) {} // 0x79a712 (XInputEnable)
 void sub_617b60(void* context) {} // 0x617b60
 void sub_68db20() {} // 0x68db20
