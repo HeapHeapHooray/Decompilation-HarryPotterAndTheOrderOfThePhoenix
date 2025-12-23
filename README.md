@@ -6,5 +6,8 @@
 ### Zig for cross-compiling from Linux to Windows, you can just use your compiler of choice if you are on Windows.
 
 # Usage
-### 1. Clone the repository and use Gemini CLI inside of it, or open the project in Google Antigravity.
-### 2. Ask Gemini to follow the instructions in GEMINI-INSTRUCTIONS.txt (Make sure you use Gemini 3 😉)
+### 1. Go to https://oldgamesdownload.com/harry-potter-and-the-order-of-the-phoenix-eks/ and download Harry_Potter_and_the_Order_of_the_Phoenix_Win_Preinstalled_EN.zip (3.57GB).
+### 2. Clone the repository.
+### 3. Put hp.exe from the downloaded zip into the newly cloned repository.
+### 4. Use Gemini CLI inside the repository, or open the project in Google Antigravity.
+### 5. Ask Gemini to follow the instructions in GEMINI-INSTRUCTIONS.txt (Make sure you use Gemini 3 😉)
