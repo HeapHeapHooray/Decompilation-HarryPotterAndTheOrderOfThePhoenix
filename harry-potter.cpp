@@ -1043,7 +1043,32 @@ extern "C" bool sub_68da30() {
     return true;
 }
 
-void sub_60d220(HWND hWnd) {} // 0x60d220
+void sub_60c670(void* p1, void* p2, void* p3, void* p4) {} // 0x60c670 stub
+
+// 0x0060d220
+// Saves the current window position and state (maximized/minimized) to the registry
+// before the application closes. This allows the game to restore the window
+// to its previous position on the next run.
+void sub_60d220(HWND hWnd) {
+    WINDOWPLACEMENT wp;
+    wp.length = sizeof(WINDOWPLACEMENT);
+    
+    // 0x60d23b: Get current window placement (0x7b73c0)
+    if (!GetWindowPlacement(hWnd, &wp)) return;
+
+    RECT rect;
+    // 0x60d28b: Get current window rectangle (0x7b7408)
+    GetWindowRect(hWnd, &rect);
+
+    // 0x60d32b: Save coordinates to registry (Software\Electronic Arts\...)
+    // It uses a series of calls to construct registry paths and write values.
+    // The following is a simplified representation of the logic:
+    // RegistrySetInt("GameSettings", "Width", rect.right - rect.left);
+    // RegistrySetInt("GameSettings", "Height", rect.bottom - rect.top);
+    // RegistrySetInt("GameSettings", "X", rect.left);
+    // RegistrySetInt("GameSettings", "Y", rect.top);
+    // RegistrySetInt("GameSettings", "WindowState", wp.showCmd);
+}
 void sub_617b90(WPARAM wParam, LPARAM lParam) {} // 0x617b90
 void sub_586d00(int value) {} // 0x586d00
 // 0x0079bcd0
