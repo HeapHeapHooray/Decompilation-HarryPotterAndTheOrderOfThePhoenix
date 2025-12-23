@@ -404,22 +404,46 @@ void sub_67cfb0() {} // 0x67cfb0
 void sub_67d0c0() {} // 0x67d0c0
 void sub_66e080() {} // 0x66e080
 void sub_79a712(int enable) {} // 0x79a712 (XInputEnable)
+// 0x0079bcd0
+// 64-bit unsigned multiplication: (low, high) * (mLow, mHigh)
+uint64_t __stdcall sub_79bcd0(uint32_t low, uint32_t high, uint32_t mLow, uint32_t mHigh) {
+    return (uint64_t)low * mLow + (((uint64_t)low * mHigh + (uint64_t)high * mLow) << 32);
+}
+
+// 0x0079eab0
+// 64-bit signed division: (low, high) / (dLow, dHigh)
+int64_t __stdcall sub_79eab0(int32_t low, int32_t high, int32_t dLow, int32_t dHigh) {
+    int64_t dividend = ((int64_t)high << 32) | (uint32_t)low;
+    int64_t divisor = ((int64_t)dHigh << 32) | (uint32_t)dLow;
+    if (divisor == 0) return 0;
+    return dividend / divisor;
+}
+
+// 0x00618010
+// Initializes the timer period.
+void sub_618010() {
+    TIMECAPS tc;
+    if (timeGetDevCaps(&tc, sizeof(TIMECAPS)) == TIMERR_NOERROR) {
+        uint32_t period = tc.wPeriodMin;
+        if (period < 1) period = 1;
+        timeBeginPeriod(period);
+        g_dword_e6e5e8 = period;
+    }
+}
+
 void sub_636830() {} // 0x636830
-void sub_618010() {} // 0x618010
 void sub_617f50(void* p) {} // 0x617f50
 void sub_617ee0(void* p1, void* p2) {} // 0x617ee0
-uint64_t sub_79bcd0(uint32_t low, uint32_t high, uint32_t mLow, uint32_t mHigh) { return 0; } // 0x79bcd0
-uint32_t sub_79eab0(uint32_t low, uint32_t high, uint32_t dLow, uint32_t dHigh) { return 0; } // 0x79eab0
 
 // 0x00618140
 // Frame timing and input polling.
 bool sub_618140() {
-    // 0x61814c
-    sub_636830(); // 0x636830
-    sub_618010(); // 0x618010
+    sub_636830();
+    sub_618010();
 
-    // 0x618153: Get time (presumably timeGetTime or similar)
-    uint32_t time = timeGetTime(); // 0x618010 wrapper
+    uint32_t time = timeGetTime();
+    // 0x618159: shld $0x10, %eax, %edx; shl $0x10, %eax
+    // This effectively multiplies the time by 2^16 (65536)
     uint64_t time64 = (uint64_t)time << 16;
     uint32_t timeHigh = (uint32_t)(time64 >> 32);
     uint32_t timeLow = (uint32_t)time64;
@@ -427,6 +451,8 @@ bool sub_618140() {
     uint32_t lastTimeLow, lastTimeHigh;
     if (!(g_dword_e75234 & 1)) {
         g_dword_e75234 |= 1;
+        g_dword_e6e5e0 = timeLow;
+        g_dword_e6e5e4 = timeHigh;
         lastTimeLow = timeLow;
         lastTimeHigh = timeHigh;
     } else {
@@ -434,46 +460,58 @@ bool sub_618140() {
         lastTimeHigh = g_dword_e6e5e4;
     }
 
-    uint64_t diff = time64 - (((uint64_t)lastTimeHigh << 32) | lastTimeLow);
-    if ((int64_t)diff >= 0) {
-        if (diff > 0x640000) {
-            diff = 0x640000;
-        }
+    uint64_t lastTime64 = ((uint64_t)lastTimeHigh << 32) | lastTimeLow;
+    int64_t diff = (int64_t)(time64 - lastTime64);
+    
+    uint32_t diffLow, diffHigh;
+    if (diff < 0) {
+        diffLow = 0;
+        diffHigh = 0;
     } else {
-        diff = 0;
+        if (diff > 0x640000) {
+            diffLow = 0x640000;
+            diffHigh = 0;
+        } else {
+            diffLow = (uint32_t)diff;
+            diffHigh = (uint32_t)(diff >> 32);
+        }
     }
 
-    uint64_t totalTime = (((uint64_t)g_dword_c8319c << 32) | g_dword_c83198) + diff;
-    g_dword_c83198 = (uint32_t)totalTime;
-    g_dword_c8319c = (uint32_t)(totalTime >> 32);
+    uint64_t currentTime = ((uint64_t)g_dword_c8319c << 32) | g_dword_c83198;
+    currentTime += ((uint64_t)diffHigh << 32) | diffLow;
+    g_dword_c83198 = (uint32_t)currentTime;
+    g_dword_c8319c = (uint32_t)(currentTime >> 32);
+    
     g_dword_e6e5e0 = timeLow;
     g_dword_e6e5e4 = timeHigh;
 
-    // 0x6181ca: sub_79bcd0 (multiplication?)
-    // 0x6181d8: sub_79eab0 (division?)
-    // Simplified timing logic for now as these are likely fixed-point math helpers
-    g_dword_c83110 = (uint32_t)sub_79eab0(g_dword_c83198, g_dword_c8319c, 0, 0x10000);
+    // 0x6181ca: sub_79bcd0 (multiplication by 3?)
+    // The assembly passes 3 as mLow and 0 as mHigh
+    uint64_t scaledTime = sub_79bcd0(g_dword_c83198, g_dword_c8319c, 3, 0);
+    // 0x6181d8: sub_79eab0 (division by 0x10000?)
+    g_dword_c83110 = (uint32_t)sub_79eab0((uint32_t)scaledTime, (uint32_t)(scaledTime >> 32), 0x10000, 0);
 
-    if ((int32_t)g_dword_c831ac > (int32_t)g_dword_c8319c || 
-        (g_dword_c831ac == g_dword_c8319c && g_dword_c831a8 > g_dword_c83198)) {
+    uint32_t pollTimeLow = g_dword_c831a8;
+    uint32_t pollTimeHigh = g_dword_c831ac;
+
+    if ((int32_t)pollTimeHigh > (int32_t)g_dword_c8319c || 
+        (pollTimeHigh == g_dword_c8319c && pollTimeLow > g_dword_c83198)) {
         // 0x618203
-        uint64_t step = (((uint64_t)g_dword_c83194 << 32) | g_dword_c83190);
-        uint64_t next = (((uint64_t)g_dword_c831ac << 32) | g_dword_c831a8) + step;
+        uint64_t step = ((uint64_t)g_dword_c83194 << 32) | g_dword_c83190;
+        uint64_t nextPoll = ((uint64_t)pollTimeHigh << 32) | pollTimeLow;
+        nextPoll += step;
         
         uint32_t idx = g_dword_8e1648 ^ 1;
-        g_qword_c83170[idx] = next;
-        g_dword_c831a8 = (uint32_t)next;
-        g_dword_c831ac = (uint32_t)(next >> 32);
+        g_qword_c83170[idx] = nextPoll;
+        g_dword_c831a8 = (uint32_t)nextPoll;
+        g_dword_c831ac = (uint32_t)(nextPoll >> 32);
         g_dword_8e1648 = idx;
 
-        // 0x618241: sub_79bcd0
-        // 0x61824f: sub_79eab0
-        uint32_t val = sub_79eab0(g_dword_c831a8, g_dword_c831ac, 0, 0x10000);
+        uint64_t scaledPoll = sub_79bcd0(g_dword_c831a8, g_dword_c831ac, 3, 0);
+        uint32_t val = (uint32_t)sub_79eab0((uint32_t)scaledPoll, (uint32_t)(scaledPoll >> 32), 0x10000, 0);
         
-        // 0x61825d: sub_617f50
         sub_617f50(&val);
         
-        // 0x618262: Virtual call
         if (g_dword_8e1644) {
             void** vtable = *(void***)g_dword_8e1644;
             typedef void (__stdcall *PollPtr)(void*, uint32_t*);
@@ -482,14 +520,29 @@ bool sub_618140() {
         }
     }
 
-    // 0x6182ab: More timing/input logic
-    uint64_t limit = (((uint64_t)g_dword_c831a4 << 32) | g_dword_c831a0) + (((uint64_t)g_dword_c8318c << 32) | g_dword_c83188);
+    // 0x6182ab: Secondary timing check
+    uint64_t limit = ((uint64_t)g_dword_c831a4 << 32) | g_dword_c831a0;
+    uint64_t step2 = ((uint64_t)g_dword_c8318c << 32) | g_dword_c83188;
+    limit += step2;
+
     if ((int64_t)limit <= (int64_t)time64) {
-        // ... simplified ...
-        g_dword_c831a0 = (uint32_t)limit;
-        g_dword_c831a4 = (uint32_t)(limit >> 32);
+        uint32_t nextLimitLow = (uint32_t)limit;
+        uint32_t nextLimitHigh = (uint32_t)(limit >> 32);
         
-        uint32_t val2 = sub_79eab0(g_dword_c831a0, g_dword_c831a4, 0, 0x10000);
+        uint32_t altLimitLow = g_qword_c83170[g_dword_8e1648 ^ 1];
+        uint32_t altLimitHigh = g_qword_c83170[g_dword_8e1648 ^ 1] >> 32;
+
+        if ((int32_t)nextLimitHigh > (int32_t)altLimitHigh || 
+            (nextLimitHigh == altLimitHigh && nextLimitLow > altLimitLow)) {
+            nextLimitLow = altLimitLow;
+            nextLimitHigh = altLimitHigh;
+        }
+
+        g_dword_c831a0 = nextLimitLow;
+        g_dword_c831a4 = nextLimitHigh;
+        
+        uint64_t scaledLimit = sub_79bcd0(nextLimitLow, nextLimitHigh, 3, 0);
+        uint32_t val2 = (uint32_t)sub_79eab0((uint32_t)scaledLimit, (uint32_t)(scaledLimit >> 32), 0x10000, 0);
         g_dword_c8311c = val2;
         
         sub_617ee0(&g_dword_c83118, &val2);
@@ -497,7 +550,7 @@ bool sub_618140() {
         if (g_dword_8e1644) {
             void** vtable = *(void***)g_dword_8e1644;
             typedef void (__stdcall *PollPtr)(void*, uint32_t*);
-            PollPtr Poll = (PollPtr)vtable[1]; // 0x04 / 4 = 1
+            PollPtr Poll = (PollPtr)vtable[1];
             Poll(g_dword_8e1644, &val2);
         }
         return true;
