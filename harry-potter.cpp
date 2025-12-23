@@ -31,6 +31,33 @@ HWND g_hWnd = NULL; // 0xbef6cc
 float g_fUnknown_8ae1dc = 0.0f; // 0x8ae1dc
 uint8_t g_byte_8afbd9 = 0; // 0x8afbd9
 
+// Added globals for message loop
+uint8_t g_byte_bef6c5 = 0; // 0xbef6c5
+uint8_t g_byte_bef6c7 = 0; // 0xbef6c7
+uint8_t g_byte_bef67e = 0; // 0xbef67e
+uint8_t g_byte_bef67c = 0; // 0xbef67c
+uint8_t g_byte_bef67d = 0; // 0xbef67d
+uint8_t g_byte_bef6d4 = 0; // 0xbef6d4
+uint8_t g_byte_bef6d5 = 0; // 0xbef6d5
+DWORD g_dword_bef6d8 = 0; // 0xbef6d8
+void* g_dword_bef6d0 = NULL; // 0xbef6d0
+void* g_dword_bf1920 = NULL; // 0xbf1920
+void* g_dword_e6b384 = NULL; // 0xe6b384
+void* g_dword_e6a070 = NULL; // 0xe6a070
+void* g_dword_e6a194 = NULL; // 0xe6a194
+DWORD g_dword_e74c20 = 0; // 0xe74c20
+DWORD g_dword_c82b00 = 0; // 0xc82b00
+DWORD g_dword_c82ac8 = 0; // 0xc82ac8
+DWORD g_dword_c82b08 = 0; // 0xc82b08
+DWORD g_dword_c83188 = 0; // 0xc83188
+DWORD g_dword_c8318c = 0; // 0xc8318c
+float g_float_8475d8 = 0.0f; // 0x8475d8
+float g_float_845594 = 0.0f; // 0x845594
+float g_float_845320 = 0.0f; // 0x845320
+DWORD g_dword_8afb08 = 0; // 0x8afb08
+void* g_dword_e6b2dc = NULL; // 0xe6b2dc
+void* g_dword_bef6e4 = NULL; // 0xbef6e4
+
 STICKYKEYS g_stickyKeys; // 0x8afc44
 TOGGLEKEYS g_toggleKeys; // 0x8afc4c
 FILTERKEYS g_filterKeys; // 0x8afc54
@@ -251,7 +278,73 @@ bool sub_60da90(HINSTANCE hInstance) {
 
 int sub_60db20(void* this_ptr, HINSTANCE hInstance, LPSTR lpCmdLine, int nShowCmd) { return 1; } // 0x60db20
 void sub_617bf0(const char* cmdLine, const char* key, int* outValue) {} // 0x617bf0
-void sub_60dc10() {} // 0x60dc10
+// Stubs for functions called by sub_60dc10
+void sub_67d310() {}
+void sub_68dac0() {}
+void sub_618140() {}
+void sub_79ea80(char c) {}
+void sub_612f00() {}
+void sub_6f53d7(void* p) {}
+void sub_616590(void* p) {}
+void sub_6a9f20() {}
+void sub_58b8a0() {}
+void sub_66f810(void* p) {}
+void sub_6a8f90() {}
+
+// 0x0060dc10
+// Main Message Loop and Game Update Loop
+void sub_60dc10() {
+    if (g_byte_bef6c5 != 0) {
+        g_byte_bef6c5 = 0; // 0x60de99
+        return;
+    }
+
+    while (true) {
+        // 0x60dc27: Device Reset Check
+        sub_67d310(); 
+
+        if (g_byte_8afbd9 == 0) {
+            if (g_byte_bef6c7 != 0) {
+                 // 0x60dc42: Check global pointer and call virtual functions
+                if (g_dword_e6b384) {
+                    // Simplified: We assume stubs for now as we can't easily replicate virtual calls without class defs
+                }
+                sub_68dac0(); // 0x60dc68
+
+                // 0x60dc72: Ensure cursor is visible?
+                while (ShowCursor(TRUE) <= 0);
+            }
+        }
+        
+        // 0x60dd0c: PeekMessage Loop
+        MSG msg;
+        // PM_REMOVE (1) | PM_NOYIELD (2) = 3
+        if (PeekMessageA(&msg, NULL, 0, 0, 3)) {
+            if (msg.message == WM_QUIT) { // 0x12
+                g_byte_bef6c5 = 0;
+                return;
+            }
+            if ((int)msg.message != -1) {
+                TranslateMessage(&msg);
+                DispatchMessageA(&msg);
+            }
+            // Loop back to start (implicit in while(true))
+        } else {
+             // 0x60dd53: Game Update
+             sub_79ea80(0x10); 
+             
+             // ... time calculations ...
+             
+             sub_618140(); // Update
+             
+             // 0x60de67: Check exit condition (simplified logic flow)
+             if (g_byte_bef6c5 != 0) {
+                g_byte_bef6c5 = 0;
+                return;
+             }
+        }
+    }
+}
 void sub_614330(int height) {} // 0x614330
 void sub_60c150() {} // 0x60c150
 
@@ -454,8 +547,17 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     // 0x60ee3a: Show the window.
     ShowWindow(g_hWnd, nShowCmd); // 0x7b73a8
 
-    // 0x60f082: Enter message loop (simplified).
-    ShowCursor(TRUE); // 0x7b73c4
+    // 0x60f004: Update window.
+    UpdateWindow(g_hWnd); // 0x7b7404
+
+    // 0x60f011: Enter message loop.
+    sub_60dc10(); // 0x60dc10
+
+    // 0x60f01d: Post-loop cleanup.
+    sub_6a8f90(); // 0x6a8f90
+
+    // 0x60f082: Exit sequence.
+    while (ShowCursor(TRUE) <= 0); // 0x7b73c4
     
     // 0x60f098: Cleanup and exit.
     sub_60deb0(1); // 0x60deb0
