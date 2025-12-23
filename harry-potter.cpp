@@ -529,7 +529,68 @@ uint32_t sub_616590(void* p) {
 
     return maxVal;
 }
-void sub_6a9f20() {} // 0x6a9f20
+uint32_t sub_618010(); // forward decl
+void sub_6aaaa0(int param) {} // 0x6aaaa0 stub
+void sub_6a9330(int param) {} // 0x6a9330 stub
+
+// 0x006a9f20
+// Updates timing and performance counters for an object.
+// It calculates elapsed time, scales it by a factor, and updates internal 64-bit counters.
+// It also potentially calls sub-update functions if certain conditions are met.
+void sub_6a9f20(void* p) {
+    uint8_t* pObj = (uint8_t*)p;
+    if (!pObj) return;
+
+    // 0xec67ec: Get pointer to timing structure
+    uint8_t* pTiming = *(uint8_t**)(pObj + 0x70);
+    // 0xec67f1: Reset a flag/status byte
+    *(uint8_t*)(pObj + 0xa0) = 0;
+    
+    uint32_t currentTime = 0;
+    if (pTiming) {
+        // 0xec67fa: Get current timer value (0x618010)
+        currentTime = sub_618010();
+        uint32_t lastTime = *(uint32_t*)pTiming;
+        uint32_t delta = currentTime - lastTime;
+        uint32_t factor = *(uint32_t*)(pTiming + 0x10);
+        
+        if (factor == 0x1000) {
+            // 0xec680e: Simple 64-bit addition of delta
+            uint32_t* pLow = (uint32_t*)(pTiming + 0x08);
+            uint32_t* pHigh = (uint32_t*)(pTiming + 0x0C);
+            uint32_t oldLow = *pLow;
+            *pLow = oldLow + delta;
+            if (*pLow < oldLow) (*pHigh)++;
+        } else {
+            // 0xec681e - 0xec682c: Scaled 64-bit addition
+            // (delta * factor) >> 12
+            uint64_t scaledDelta = ((uint64_t)delta * factor) >> 12;
+            *(uint64_t*)(pTiming + 0x08) += scaledDelta;
+        }
+        // 0xec6811/0xec682a: Update last time stamp
+        *(uint32_t*)pTiming = currentTime;
+        // 0xec6817/0xec682f: Get time again for the next part
+        currentTime = sub_618010();
+    }
+    
+    // 0xec6838: Calculate more timing deltas
+    uint32_t timeDiff = currentTime - *(uint32_t*)(pObj + 0x58);
+    *(uint32_t*)(pObj + 0x5c) += timeDiff;
+    
+    // 0xec683e: Conditional sub-update
+    if (*(uint32_t*)(pObj + 0x48) == 0) {
+        if (*(void**)pObj != NULL) {
+            // 0xec684f: Call sub_6aaaa0(0x1000)
+            sub_6aaaa0(0x1000);
+        }
+    }
+    
+    // 0xec6854: Final conditional sub-update
+    if (*(void**)(pObj + 0x70) != NULL) {
+        // 0xec6860: Call sub_6a9330(0x1000)
+        sub_6a9330(0x1000);
+    }
+}
 void sub_58b8a0() {} // 0x58b8a0
 void sub_66f810(const char* format, ...) {
     char buffer[2048];
@@ -919,8 +980,14 @@ void sub_60dc10() {
                          g_dword_bef6d8 = 0; // 0x60de22
                      } else {
                          // 0x60de2a
-                         if (g_dword_e6b2dc && *((DWORD*)((char*)g_dword_e6b2dc + 4)) == 0 && *((DWORD*)g_dword_e6b2dc) == 0) {
-                              sub_6a9f20(); // 0x6a9f20
+                         if (g_dword_e6b2dc != NULL) {
+                             void* temp = *(void**)((uint8_t*)g_dword_e6b2dc + 4);
+                             if (temp != NULL) {
+                                 void* obj = *(void**)temp;
+                                 if (obj != NULL) {
+                                     sub_6a9f20(obj);
+                                 }
+                             }
                          }
                      }
                      
