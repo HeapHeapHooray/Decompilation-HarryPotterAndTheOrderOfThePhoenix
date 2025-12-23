@@ -745,7 +745,75 @@ void sub_67d2e0() {
     // 0x67d2f6: Convert bytes to MB (shift right by 20)
     g_dword_bf193c = availableMem >> 20;
 }
-void sub_67cfb0() {} // 0x67cfb0
+uint32_t g_dword_af1390 = 0; // 0xaf1390
+uint32_t g_dword_ae9250 = 0; // 0xae9250
+void* g_ptr_bf1934 = NULL; // 0xbf1934
+void* g_ptr_bf1938 = NULL; // 0xbf1938
+
+void sub_6750a0() {} // 0x6750a0 stub
+void sub_67ecf0(void* p, int val) {} // 0x67ecf0 stub
+void sub_6836e0() {} // 0x6836e0 stub
+
+// 0x0067cfb0
+// Performs cleanup of various resources, typically called when the Direct3D
+// device is lost or being reset. It releases specific textures and buffers.
+void sub_67cfb0() {
+    // 0x67cfb6: Release resource at 0xb95034
+    if (g_dword_b95034 != NULL) {
+        void** vtable = *(void***)g_dword_b95034;
+        typedef ULONG (__stdcall *ReleasePtr)(void*);
+        ((ReleasePtr)vtable[2])(g_dword_b95034); // 0x08 / 4 = 2
+        g_dword_b95034 = NULL;
+    }
+
+    // 0x67cfdc: Call additional cleanup
+    sub_6750a0();
+    
+    // 0x67cfe1 - 0x67cfeb: Reset global pointers/counters
+    g_dword_af1390 = 0;
+    g_dword_ae9250 = 0;
+
+    // 0x67cff5: Handle resource at 0xbf1934
+    if (g_ptr_bf1934 != NULL && g_ptr_bf1934 != (void*)0xBACB0FFE) {
+        void* pTempObj = NULL;
+        // 0x67d021: Call virtual function at index 5 of 0xbf1924 (GetRenderTarget?)
+        if (g_dword_bf1924 != NULL) {
+             void** vtableDev = *(void***)g_dword_bf1924;
+             typedef HRESULT (__stdcall *FuncPtr5)(void*, uint32_t, uint32_t, void**);
+             ((FuncPtr5)vtableDev[5])(g_dword_bf1924, 0, 0, &pTempObj); // 0x14 / 4 = 5
+        }
+        
+        if (pTempObj != NULL) {
+            sub_67ecf0(pTempObj, 0);
+            // 0x67d040: Release the temp object
+            void** vtableTemp = *(void***)pTempObj;
+            ((ULONG (__stdcall *)(void*))vtableTemp[2])(pTempObj);
+        }
+        
+        // 0x67d054: Release the resource at 0xbf1934
+        void** vtable34 = *(void***)g_ptr_bf1934;
+        ((ULONG (__stdcall *)(void*))vtable34[2])(g_ptr_bf1934);
+        g_ptr_bf1934 = NULL;
+    }
+    
+    // 0x67d063: Handle resource at 0xbf1930
+    if (g_dword_bf1930 != 0) {
+        void* pObj30 = (void*)g_dword_bf1930;
+        void** vtable30 = *(void***)pObj30;
+        ((ULONG (__stdcall *)(void*))vtable30[2])(pObj30);
+        g_dword_bf1930 = 0;
+    }
+
+    // 0x67d08c: Handle resource at 0xbf1938
+    if (g_ptr_bf1938 != NULL) {
+        void** vtable38 = *(void***)g_ptr_bf1938;
+        ((ULONG (__stdcall *)(void*))vtable38[2])(g_ptr_bf1938);
+        g_ptr_bf1938 = NULL;
+    }
+
+    // 0x67d0b5: Final cleanup call
+    sub_6836e0();
+}
 void sub_67d0c0() {} // 0x67d0c0
 void sub_66e080() {} // 0x66e080
 void sub_79a712(int enable) {} // 0x79a712 (XInputEnable)
