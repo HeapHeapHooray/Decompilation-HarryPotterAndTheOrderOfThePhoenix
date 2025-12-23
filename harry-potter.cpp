@@ -591,7 +591,94 @@ void sub_6a9f20(void* p) {
         sub_6a9330(0x1000);
     }
 }
-void sub_58b8a0() {} // 0x58b8a0
+uint32_t g_state_c7b908 = 0; // 0xc7b908
+void* g_ptr_bf1a88 = NULL; // 0xbf1a88
+uint32_t g_dword_c7b90c = 0; // 0xc7b90c
+void* g_ptr_c7c370 = NULL; // 0xc7c370
+uint8_t g_byte_c6d7e0 = 0; // 0xc6d7e0
+void* g_ptr_c7b924 = NULL; // 0xc7b924
+uint8_t g_array_c7ba4c[0x1B0] = {0}; // 0xc7ba4c (6 entries * 0x48 bytes)
+void* g_ptr_c7d038 = NULL; // 0xc7d038
+
+void sub_6a4510(void* p) {} // 0x6a4510 stub
+void sub_40f2f0(void* p) {} // 0x40f2f0 stub
+void sub_40efb0(void* p1, int p2) {} // 0x40efb0 stub
+
+// 0x0058b8a0
+// Game state manager / object cleanup function.
+// Based on the current state (g_state_c7b908), it performs various operations
+// on global objects, typically calling a specific virtual function (offset 0x28).
+void sub_58b8a0() {
+    uint32_t state = g_state_c7b908;
+    if (state > 6) return;
+
+    if (state <= 3) {
+        // 0x58b8b6: Cases 0, 1, 2, 3
+        void* pObj = g_ptr_bf1a88;
+        void* arg;
+        if (pObj == NULL) {
+            arg = (void*)0xffffffff;
+        } else {
+            arg = (void*)0x84d1d8;
+            if (*(void**)((uint8_t*)pObj + 4) != NULL) {
+                sub_6a4510(arg);
+            } else {
+                sub_40f2f0(arg);
+            }
+        }
+        sub_40efb0(arg, 1000);
+        
+        // 0x58b8ec: Update a timer/counter and transition state
+        uint32_t val = g_dword_c8311c;
+        g_dword_c7b90c = (uint32_t)((((uint64_t)val * 0x55555556) >> 32) + (val >> 31) + 1000);
+        g_state_c7b908 = 7;
+        state = 4; // Fall through to Case 4 logic
+    }
+
+    if (state == 4 || state == 6) {
+        // 0x58b918: Case 4
+        // 0x58b98e: Case 6
+        void* pObjC7C370 = g_ptr_c7c370;
+        if (pObjC7C370) {
+            void** vtable = *(void***)pObjC7C370;
+            ((void (__stdcall *)(void*))vtable[10])(pObjC7C370); // 0x28 / 4 = 10
+            g_byte_c6d7e0 = 0;
+        }
+        
+        if (state == 6) return;
+
+        void* pObjC7B924 = g_ptr_c7b924;
+        if (pObjC7B924) {
+            void** vtable = *(void***)pObjC7B924;
+            ((void (__stdcall *)(void*))vtable[10])(pObjC7B924);
+        }
+
+        // 0x58b942: Iterate through an array of objects
+        for (int i = 0; i < 6; i++) {
+            void* pEntry = *(void**)(g_array_c7ba4c + i * 0x48);
+            if (pEntry) {
+                void** vtable = *(void***)pEntry;
+                ((void (__stdcall *)(void*))vtable[10])(pEntry);
+            }
+        }
+
+        // 0x58b95f: Iterate through another set of objects
+        uint8_t* pObjC7D038 = (uint8_t*)g_ptr_c7d038;
+        if (pObjC7D038) {
+            uint8_t* pSub = pObjC7D038 + 0x0c;
+            for (int i = 0; i < 2; i++) {
+                if (*(uint32_t*)(pSub + 0x10) != 0) {
+                    void* pEntry = *(void**)pSub;
+                    if (pEntry) {
+                        void** vtable = *(void***)pEntry;
+                        ((void (__stdcall *)(void*))vtable[10])(pEntry);
+                    }
+                }
+                pSub += 0x2c;
+            }
+        }
+    }
+}
 void sub_66f810(const char* format, ...) {
     char buffer[2048];
     va_list args;
