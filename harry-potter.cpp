@@ -442,7 +442,24 @@ void* sub_612f00() {
     
     return &g_struct_e6e870;
 }
-void sub_6f53d7(void* p) {} // 0x6f53d7
+// 0x006f5338
+// Internal CRT function used by atexit (likely _onexit).
+void* sub_6f5338(void* pFunc) { return NULL; } // stub
+
+// 0x006f53d7
+// Registers a function to be called at program termination (atexit).
+// It wraps an internal function (sub_6f5338) and converts its return value
+// to the standard atexit return format (0 for success, -1 for failure).
+int sub_6f53d7(void* pFunc) {
+    // 0x6f53db: Call internal registration function.
+    void* result = sub_6f5338(pFunc);
+    
+    // 0x6f53e0 - 0x6f53e4: Convert non-zero result to 1, and zero to 0 (!!result).
+    // 0x6f53e7: decrement (!!result - 1).
+    // If sub_6f5338 returned a non-zero pointer (success), this returns 0.
+    // If sub_6f5338 returned NULL (failure), this returns -1.
+    return (result != NULL) ? 0 : -1;
+}
 void sub_616590(void* p) {} // 0x616590
 void sub_6a9f20() {} // 0x6a9f20
 void sub_58b8a0() {} // 0x58b8a0
