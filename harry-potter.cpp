@@ -279,67 +279,104 @@ bool sub_60da90(HINSTANCE hInstance) {
 int sub_60db20(void* this_ptr, HINSTANCE hInstance, LPSTR lpCmdLine, int nShowCmd) { return 1; } // 0x60db20
 void sub_617bf0(const char* cmdLine, const char* key, int* outValue) {} // 0x617bf0
 // Stubs for functions called by sub_60dc10
-void sub_67d310() {}
-void sub_68dac0() {}
-void sub_618140() {}
-void sub_79ea80(char c) {}
-void sub_612f00() {}
-void sub_6f53d7(void* p) {}
-void sub_616590(void* p) {}
-void sub_6a9f20() {}
-void sub_58b8a0() {}
-void sub_66f810(void* p) {}
-void sub_6a8f90() {}
+void sub_67d310() {} // 0x67d310
+void sub_68dac0() {} // 0x68dac0
+void sub_618140() {} // 0x618140
+void sub_79ea80(char c) {} // 0x79ea80
+void sub_612f00() {} // 0x612f00
+void sub_6f53d7(void* p) {} // 0x6f53d7
+void sub_616590(void* p) {} // 0x616590
+void sub_6a9f20() {} // 0x6a9f20
+void sub_58b8a0() {} // 0x58b8a0
+void sub_66f810(void* p) {} // 0x66f810
+void sub_6a8f90() {} // 0x6a8f90
 
 // 0x0060dc10
 // Main Message Loop and Game Update Loop
 void sub_60dc10() {
-    if (g_byte_bef6c5 != 0) {
+    if (g_byte_bef6c5 != 0) { // 0x60dc1b
         g_byte_bef6c5 = 0; // 0x60de99
         return;
     }
 
     while (true) {
         // 0x60dc27: Device Reset Check
-        sub_67d310(); 
+        sub_67d310(); // 0x67d310
 
-        if (g_byte_8afbd9 == 0) {
-            if (g_byte_bef6c7 != 0) {
+        if (g_byte_8afbd9 == 0) { // 0x60dc2c
+            if (g_byte_bef6c7 != 0) { // 0x60dc39
                  // 0x60dc42: Check global pointer and call virtual functions
-                if (g_dword_e6b384) {
+                if (g_dword_e6b384) { // 0x60dc42
                     // Simplified: We assume stubs for now as we can't easily replicate virtual calls without class defs
+                    // 0x60dc4c - 0x60dc66: Virtual function calls would go here
                 }
                 sub_68dac0(); // 0x60dc68
 
                 // 0x60dc72: Ensure cursor is visible?
-                while (ShowCursor(TRUE) <= 0);
+                while (ShowCursor(TRUE) <= 0); // 0x7b73c4
             }
         }
         
         // 0x60dd0c: PeekMessage Loop
         MSG msg;
         // PM_REMOVE (1) | PM_NOYIELD (2) = 3
-        if (PeekMessageA(&msg, NULL, 0, 0, 3)) {
-            if (msg.message == WM_QUIT) { // 0x12
-                g_byte_bef6c5 = 0;
+        if (PeekMessageA(&msg, NULL, 0, 0, 3)) { // 0x7b73b4
+            if (msg.message == WM_QUIT) { // 0x60dd24 (0x12)
+                g_byte_bef6c5 = 0; // 0x60de87
                 return;
             }
-            if ((int)msg.message != -1) {
-                TranslateMessage(&msg);
-                DispatchMessageA(&msg);
+            if ((int)msg.message != -1) { // 0x60dd2f
+                TranslateMessage(&msg); // 0x7b73c8
+                DispatchMessageA(&msg); // 0x7b73e0
             }
-            // Loop back to start (implicit in while(true))
+            // Loop back to start (implicit in while(true)) - 0x60dd4e jmp 0x60de67 (logic simplified)
         } else {
              // 0x60dd53: Game Update
-             sub_79ea80(0x10); 
+             sub_79ea80(0x10); // 0x79ea80
              
              // ... time calculations ...
+             // 0x60dd68 - 0x60ddb6: FPU and time logic
              
-             sub_618140(); // Update
+             sub_618140(); // 0x618140
              
-             // 0x60de67: Check exit condition (simplified logic flow)
-             if (g_byte_bef6c5 != 0) {
-                g_byte_bef6c5 = 0;
+             // 0x60ddbf
+             if (g_byte_bef6d4 == 0) { // NOTE: Disassembly says bef6d7 in cmp, but logic flow suggests similar checks
+                 // 0x60ddc8
+                 if ((g_dword_e74c20 & 1) == 0) {
+                     g_dword_e74c20 |= 1; // 0x60ddd1
+                     sub_612f00(); // 0x612f00
+                     sub_6f53d7((void*)0x7b5640); // 0x6f53d7
+                 }
+                 
+                 sub_616590(g_dword_bef6e4); // 0x616590
+                 
+                 // 0x60ddf5: comparisons
+                 if (g_dword_bef6d8 >= g_dword_8afb08) { // 0x60de0c
+                     // 0x60de1b
+                     if (g_byte_bef6d4 == 0) {
+                         g_dword_bef6d8 = 0; // 0x60de22
+                     } else {
+                         // 0x60de2a
+                         if (g_dword_e6b2dc && *((DWORD*)((char*)g_dword_e6b2dc + 4)) == 0 && *((DWORD*)g_dword_e6b2dc) == 0) {
+                              sub_6a9f20(); // 0x6a9f20
+                         }
+                     }
+                     
+                     if (g_byte_bef6d5 != 0) { // 0x60de41
+                         sub_58b8a0(); // 0x58b8a0
+                     }
+                     
+                     // 0x60de51: math
+                 }
+                 
+                 // 0x60de60: Sleep if needed?
+                 // 0x60de61 call 0x7b7174 -> Sleep(0) likely
+                 Sleep(0); // 0x7b7174
+             }
+             
+             // 0x60de67: Check exit condition
+             if (g_byte_bef6c5 != 0) { // 0x60de67
+                g_byte_bef6c5 = 0; // 0x60de76
                 return;
              }
         }
