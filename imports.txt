@@ -1,0 +1,394 @@
+The Import Tables (interpreted .rdata section contents)
+ vma:            Hint    Time      Forward  DLL       First
+                 Table   Stamp     Chain    Name      Thunk
+ 00493e28	0049442c 00000000 00000000 004944d4 003b74b0
+
+	DLL Name: hpexhdlr.dll
+	vma:  Hint/Ord Member-Name Bound-To
+	494492	    8  ?_Raise@exception@std@@QBEXXZ
+	494478	    5  ??_7exception@std@@6B@
+	494454	   11  ?_Throw@std@@YAXABVexception@1@@Z
+	4944b2	    0  ??0exception@std@@QAE@ABV01@@Z
+
+ 00493e3c	00493fe4 00000000 00000000 004946f4 003b7068
+
+	DLL Name: KERNEL32.dll
+	vma:  Hint/Ord Member-Name Bound-To
+	494622	  334  GetDiskFreeSpaceExA
+	494638	  131  DeleteFileA
+	494646	  867  TlsAlloc
+	494652	  868  TlsFree
+	49465c	  870  TlsSetValue
+	49466a	  548  InitializeCriticalSectionAndSpinCount
+	494692	  593  LeaveCriticalSection
+	4946aa	  152  EnterCriticalSection
+	4946c2	  874  TryEnterCriticalSection
+	4946dc	  129  DeleteCriticalSection
+	4954e6	  629  MultiByteToWideChar
+	4954d6	  371  GetLocalTime
+	4954c0	  653  OutputDebugStringA
+	4954b0	  453  GetSystemInfo
+	4954a0	  594  LoadLibraryA
+	495490	  897  VirtualAlloc
+	49547e	  416  GetProcAddress
+	495462	  547  InitializeCriticalSection
+	495448	  458  GetSystemTimeAsFileTime
+	49543a	  899  VirtualFree
+	495426	  325  GetCurrentThread
+	49451e	  479  GetTickCount
+	495408	  904  VirtualQuery
+	4955d6	  569  IsDebuggerPresent
+	4955ea	  855  SleepEx
+	4955f4	  863  TerminateThread
+	494616	  693  ReadFile
+	49561a	  347  GetExitCodeThread
+	49562e	  475  GetThreadPriority
+	495642	  147  DuplicateHandle
+	494504	  833  SetThreadExecutionState
+	4944f0	  322  GetCurrentProcess
+	495654	  722  ResumeThread
+	495664	  676  QueryPerformanceFrequency
+	495680	  849  SetWaitableTimer
+	495694	  115  CreateWaitableTimerA
+	4944e2	  869  TlsGetValue
+	49460a	  932  WriteFile
+	4945f6	  376  GetLogicalDrives
+	4945e4	  795  SetFilePointer
+	4945d6	  355  GetFileSize
+	4945c8	   83  CreateFileA
+	4954fc	  383  GetModuleHandleA
+	495510	  553  InterlockedExchange
+	495526	  550  InterlockedCompareExchange
+	495544	  439  GetStartupInfoA
+	495556	  675  QueryPerformanceCounter
+	495570	  326  GetCurrentThreadId
+	4956ac	  120  DebugBreak
+	4956ba	  111  CreateThread
+	4956ca	   96  CreateMutexA
+	4956da	  706  ReleaseMutex
+	4956ea	  489  GetVersionExA
+	4956fa	  107  CreateSemaphoreA
+	49570e	  707  ReleaseSemaphore
+	495722	  504  GlobalAlloc
+	495730	  511  GlobalFree
+	49573e	  834  SetThreadIdealProcessor
+	495758	  679  RaiseException
+	49576a	  677  QueueUserAPC
+	4945ba	   52  CloseHandle
+	4945a2	  320  GetCurrentDirectoryA
+	494594	  719  ResetEvent
+	494584	   79  CreateEventA
+	494578	  790  SetEvent
+	494562	  912  WaitForSingleObject
+	49454e	  862  TerminateProcess
+	494546	  854  Sleep
+	495606	  836  SetThreadPriority
+	49452e	  484  GetUserDefaultLangID
+	495586	  323  GetCurrentProcessId
+	495418	  248  FreeLibrary
+	4955b8	  842  SetUnhandledExceptionFilter
+	49559c	  878  UnhandledExceptionFilter
+
+ 00493e50	00494318 00000000 00000000 004948e2 003b739c
+
+	DLL Name: USER32.dll
+	vma:  Hint/Ord Member-Name Bound-To
+	494702	  534  RegisterClassA
+	494714	  708  ValidateRect
+	4947d2	  605  SetMenu
+	4947dc	  658  ShowWindow
+	4947ea	  643  SetWindowPos
+	4947fa	  142  DefWindowProcA
+	49480c	  512  PeekMessageA
+	49481c	   96  CreateWindowExA
+	49482e	  691  UnregisterClassA
+	494842	  371  GetWindowPlacement
+	494858	  654  ShowCursor
+	494866	  682  TranslateMessage
+	49487a	   13  BeginPaint
+	494888	  571  SendMessageA
+	4947c6	  429  IsWindow
+	4948a8	  516  PostQuitMessage
+	4948ba	  589  SetCursor
+	4947b2	  161  DispatchMessageA
+	49577a	  471  MapVirtualKeyExA
+	49578e	  290  GetKeyboardLayout
+	4957a2	  289  GetKeyState
+	4957b0	  270  GetDesktopWindow
+	4957c4	  279  GetForegroundWindow
+	4957da	  479  MessageBoxA
+	49479c	    2  AdjustWindowRectEx
+	49478e	  486  MessageBoxW
+	494766	  700  UpdateWindow
+	494752	    1  AdjustWindowRect
+	494744	  227  FindWindowA
+	494736	  442  LoadCursorA
+	494724	  647  SetWindowTextW
+	494776	  665  SystemParametersInfoA
+	494898	  255  GetClientRect
+	4948c6	  153  DestroyWindow
+	4948d6	  200  EndPaint
+
+ 00493e64	00493fa8 00000000 00000000 0049490e 003b702c
+
+	DLL Name: GDI32.dll
+	vma:  Hint/Ord Member-Name Bound-To
+	495860	   39  CreateBitmap
+	495842	  572  SetTextColor
+	495834	  533  SetBkColor
+	495828	  534  SetBkMode
+	49581e	   18  BitBlt
+	495810	  221  ExtTextOutA
+	495804	  412  GetPixel
+	4957f4	  143  DeleteObject
+	4957e8	  140  DeleteDC
+	494900	  405  GetObjectA
+	4948ee	  421  GetStockObject
+	495870	  526  SelectObject
+	495880	   45  CreateCompatibleDC
+	495852	   57  CreateFontA
+
+ 00493e78	00493f7c 00000000 00000000 0049496e 003b7000
+
+	DLL Name: ADVAPI32.dll
+	vma:  Hint/Ord Member-Name Bound-To
+	49493e	  465  RegCreateKeyExA
+	494918	  516  RegSetValueExA
+	494960	  459  RegCloseKey
+	494950	  492  RegOpenKeyExA
+	49492a	  503  RegQueryValueExA
+	495896	  491  RegOpenKeyA
+
+ 00493e8c	00494110 00000000 00000000 00494f92 003b7194
+
+	DLL Name: MSVCP80.dll
+	vma:  Hint/Ord Member-Name Bound-To
+	49497c	  603  ??1?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@QAE@XZ
+	494a12	   45  ??$?8DU?$char_traits@D@std@@V?$allocator@D@1@@std@@YA_NABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@0@PBD@Z
+	494a8e	  101  ??$?HDU?$char_traits@D@std@@V?$allocator@D@1@@std@@YA?AV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@0@ABV10@0@Z
+	494b0c	  105  ??$?HDU?$char_traits@D@std@@V?$allocator@D@1@@std@@YA?AV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@0@PBDABV10@@Z
+	494b8c	  103  ??$?HDU?$char_traits@D@std@@V?$allocator@D@1@@std@@YA?AV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@0@ABV10@PBD@Z
+	494c0c	 1504  ?allocate@?$allocator@D@std@@QAEPADI@Z
+	494c36	 1663  ?deallocate@?$allocator@D@std@@QAEXPADI@Z
+	494c62	  328  ??0?$basic_istringstream@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@QAE@ABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@1@H@Z
+	494cf0	  734  ??5?$basic_istream@DU?$char_traits@D@std@@@std@@QAEAAV01@AAH@Z
+	494d32	  857  ??Y?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@QAEAAV01@ABV01@@Z
+	494d86	  687  ??4?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@QAEAAV01@ABV01@@Z
+	494dda	  367  ??0?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@QAE@ABV01@@Z
+	494e2a	 1022  ??_D?$basic_istringstream@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@QAEXXZ
+	494e7c	  137  ??$?MDU?$char_traits@D@std@@V?$allocator@D@1@@std@@YA_NABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@0@0@Z
+	494ef6	  689  ??4?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@QAEAAV01@PBD@Z
+	494f48	  379  ??0?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@QAE@XZ
+	4949c6	  374  ??0?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@QAE@PBD@Z
+
+ 00493ea0	00494158 00000000 00000000 00495180 003b71dc
+
+	DLL Name: MSVCR80.dll
+	vma:  Hint/Ord Member-Name Bound-To
+	49509a	 1231  ceil
+	4950a2	 1330  memmove_s
+	4950ae	 1261  free
+	4950b6	 1316  malloc
+	4950c0	  320  _control87
+	4950ce	  276  _aligned_malloc
+	4950e0	  275  _aligned_free
+	4950f0	   73  _CIasin
+	4950fa	   72  _CIacos
+	495104	  940  _strnicmp
+	495110	 1272  fwrite
+	49511a	 1404  toupper
+	495124	 1293  isspace
+	49512e	  793  _mkdir
+	495138	 1227  bsearch
+	495142	 1448  wcstombs
+	49514e	 1342  qsort
+	495156	 1394  swscanf
+	495160	 1443  wcsstr
+	49516a	 1428  wcscpy_s
+	495176	 1403  tolower
+	495090	 1377  strncat
+	495196	  365  _encode_pointer
+	4951a8	  151  __dllonexit
+	4951b6	  636  _lock
+	4951be	  802  _onexit
+	4951c8	  355  _decode_pointer
+	4951da	  280  _amsg_exit
+	4951e8	  160  __getmainargs
+	4951f8	  303  _cexit
+	495202	  383  _exit
+	49520a	  103  _XcptFilter
+	495aba	   80  _CIlog
+	495226	 1238  exit
+	49522e	  259  _acmdln
+	495238	  522  _initterm
+	495244	  523  _initterm_e
+	495252	  319  _configthreadlocale
+	495268	  233  __setusermatherr
+	49527c	  273  _adjust_fdiv
+	49528c	  204  __p__commode
+	49529c	  208  __p__fmode
+	4952aa	  230  __set_app_type
+	4952bc	  374  _except_handler4_common
+	4952d6	   65  ?terminate@@YAXXZ
+	4952ea	   52  ?_type_info_dtor_internal_method@type_info@@QAEXXZ
+	495320	  529  _invoke_watson
+	495332	  322  _controlfp_s
+	495342	  334  _crt_debugger_hook
+	495088	 1224  atof
+	49507a	 1041  _vsnprintf
+	495072	 1345  rand
+	495068	 1367  strchr
+	494f9e	 1415  vsprintf
+	495054	 1241  fclose
+	49504c	 1267  fseek
+	495044	 1269  ftell
+	49503c	 1260  fread
+	495034	 1252  fopen
+	49502a	 1284  isalnum
+	495022	 1225  atoi
+	495018	 1435  wcsncpy
+	49500e	 1386  strstr
+	495002	  930  _stricmp
+	494ff8	 1384  strrchr
+	494fee	 1335  printf
+	494fe4	 1380  strncpy
+	494fd8	  881  _snprintf
+	494fca	  891  _snwprintf
+	494fc0	 1379  strncmp
+	494fb6	 1359  sprintf
+	49518c	 1005  _unlock
+	494faa	  819  _purecall
+	495926	  368  _endthreadex
+	495936	  295  _beginthreadex
+	495948	 1327  memcpy
+	495952	  373  _except_handler3
+	495966	 1244  fflush
+	495970	  599  _isnan
+	49597a	  407  _finite
+	495984	  114  __CxxFrameHandler
+	495998	 1254  fprintf
+	4959a2	   78  _CIexp
+	4959ac	  395  _filelength
+	4959ba	   43  ?_open@@YAHPBDHH@Z
+	4959d0	  490  _getdrive
+	4959dc	 1348  remove
+	4959e6	  406  _findnext64i32
+	4959f8	  398  _findclose
+	495a06	  829  _read
+	495a0e	  834  _rmdir
+	495a18	  488  _getdiskfree
+	495a28	  444  _fullpath
+	495a34	  402  _findfirst64i32
+	495a46	  645  _lseek
+	495a50	 1170  _write
+	495a5a	  634  _localtime64
+	495a6a	  316  _close
+	495a74	 1331  memset
+	495a7e	  976  _time32
+	495a88	 1250  floor
+	495a90	   82  _CIpow
+	495a9a	   79  _CIfmod
+	495aa4	   91  _CxxThrowException
+	49505e	 1329  memmove
+	495218	  555  _ismbblead
+
+ 00493eb4	00493fa0 00000000 00000000 00495358 003b7024
+
+	DLL Name: DSOUND.dll
+	vma:  Hint/Ord Member-Name Bound-To
+	80000001	    1  <none>
+
+ 00493ec8	004943a8 00000000 00000000 004953a6 003b742c
+
+	DLL Name: WINMM.dll
+	vma:  Hint/Ord Member-Name Bound-To
+	495364	  160  timeEndPeriod
+	495374	  163  timeGetTime
+	495382	  159  timeBeginPeriod
+	495394	  161  timeGetDevCaps
+
+ 00493edc	004943bc 00000000 00000000 004953b0 003b7440
+
+	DLL Name: WSOCK32.dll
+	vma:  Hint/Ord Member-Name Bound-To
+	80000003	    3  <none>
+	80000017	   23  <none>
+	8000006f	  111  <none>
+	80000010	   16  <none>
+	80000013	   19  <none>
+	80000004	    4  <none>
+	80000034	   52  <none>
+	8000000a	   10  <none>
+	80000009	    9  <none>
+	80000065	  101  <none>
+	80000039	   57  <none>
+	8000000d	   13  <none>
+	80000002	    2  <none>
+	80000015	   21  <none>
+	8000000b	   11  <none>
+	8000000f	   15  <none>
+	80000001	    1  <none>
+	80000097	  151  <none>
+	80000012	   18  <none>
+	80000073	  115  <none>
+
+ 00493ef0	00493f98 00000000 00000000 004953d2 003b701c
+
+	DLL Name: DINPUT8.dll
+	vma:  Hint/Ord Member-Name Bound-To
+	4953bc	    0  DirectInput8Create
+
+ 00493f04	00494424 00000000 00000000 004953f0 003b74a8
+
+	DLL Name: d3d9.dll
+	vma:  Hint/Ord Member-Name Bound-To
+	4953de	   10  Direct3DCreate9
+
+ 00493f18	00494410 00000000 00000000 004953fa 003b7494
+
+	DLL Name: XINPUT1_3.dll
+	vma:  Hint/Ord Member-Name Bound-To
+	80000002	    2  <none>
+	80000003	    3  <none>
+	80000005	    5  <none>
+	80000004	    4  <none>
+
+ 00493f2c	00494310 00000000 00000000 004958b8 003b7394
+
+	DLL Name: SHELL32.dll
+	vma:  Hint/Ord Member-Name Bound-To
+	4958a4	  175  SHGetFolderPathA
+
+ 00493f40	00494440 00000000 00000000 0049590e 003b74c4
+
+	DLL Name: ole32.dll
+	vma:  Hint/Ord Member-Name Bound-To
+	4958d8	   96  CoSetProxyBlanket
+	4958ec	  105  CoUninitialize
+	4958fe	   59  CoInitialize
+	4958c4	   16  CoCreateInstance
+
+ 00493f54	00494304 00000000 00000000 00495918 003b7388
+
+	DLL Name: OLEAUT32.dll
+	vma:  Hint/Ord Member-Name Bound-To
+	80000002	    2  <none>
+	80000006	    6  <none>
+
+ 00493f68	00000000 00000000 00000000 00000000 00000000
+
+There is a debug directory in .rdata at 0x7b8a30
+
+Type                Size     Rva      Offset
+  0         Unknown 00000000 00000000 00000000
+
+The .rsrc Resource Directory section:
+000  Type Table: Char: 0, Time: 00000000, Ver: 4/0, Num Names: 0, IDs: 1
+010   Entry: ID: 0x000018, Value: 0x80000018
+018    Name Table: Char: 0, Time: 00000000, Ver: 4/0, Num Names: 0, IDs: 1
+028     Entry: ID: 0x000001, Value: 0x80000030
+030      Language Table: Char: 0, Time: 00000000, Ver: 4/0, Num Names: 0, IDs: 1
+040       Entry: ID: 0x000409, Value: 0x000048
+048        Leaf: Addr: 0xa77058, Size: 0x000152, Codepage: 1252
+ Resources start at offset: 0x58
+
