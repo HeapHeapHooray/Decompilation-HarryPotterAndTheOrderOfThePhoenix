@@ -65,6 +65,27 @@ void* g_dword_bf1924 = NULL; // 0xbf1924
 void* g_dword_b95034 = NULL; // 0xb95034
 void* g_dword_e6a42c = NULL; // 0xe6a42c
 void* g_dword_e6a674 = NULL; // 0xe6a674
+uint32_t g_dword_e75234 = 0; // 0xe75234
+uint32_t g_dword_e6e5e4 = 0; // 0xe6e5e4
+uint32_t g_dword_e6e5e0 = 0; // 0xe6e5e0
+uint32_t g_dword_c83198 = 0; // 0xc83198
+uint32_t g_dword_c8319c = 0; // 0xc8319c
+uint32_t g_dword_c831a8 = 0; // 0xc831a8
+uint32_t g_dword_c831ac = 0; // 0xc831ac
+uint32_t g_dword_c83190 = 0; // 0xc83190
+uint32_t g_dword_c83194 = 0; // 0xc83194
+uint32_t g_dword_8e1648 = 0; // 0x8e1648
+uint64_t g_qword_c83170[2] = {0, 0}; // 0xc83170
+void* g_dword_8e1644 = NULL; // 0x8e1644
+uint32_t g_dword_c831a0 = 0; // 0xc831a0
+uint32_t g_dword_c831a4 = 0; // 0xc831a4
+uint32_t g_dword_c83110 = 0; // 0xc83110
+uint32_t g_dword_c8311c = 0; // 0xc8311c
+uint32_t g_dword_c83118 = 0; // 0xc83118
+uint32_t g_dword_e6e5e8 = 0; // 0xe6e5e8
+uint8_t g_byte_e6b388 = 0; // 0xe6b388
+void* g_dword_bef7c0 = NULL; // 0xbef7c0
+void* g_dword_bef768 = NULL; // 0xbef768
 
 STICKYKEYS g_stickyKeys; // 0x8afc44
 TOGGLEKEYS g_toggleKeys; // 0x8afc4c
@@ -370,7 +391,6 @@ bool __stdcall sub_617bf0(void* context, const char* key, char** outValue) {
     return false;
 }
 // Stubs for functions called by sub_60dc10
-void sub_618140() {} // 0x618140
 void sub_79ea80(char c) {} // 0x79ea80
 void sub_612f00() {} // 0x612f00
 void sub_6f53d7(void* p) {} // 0x6f53d7
@@ -384,6 +404,107 @@ void sub_67cfb0() {} // 0x67cfb0
 void sub_67d0c0() {} // 0x67d0c0
 void sub_66e080() {} // 0x66e080
 void sub_79a712(int enable) {} // 0x79a712 (XInputEnable)
+void sub_636830() {} // 0x636830
+void sub_618010() {} // 0x618010
+void sub_617f50(void* p) {} // 0x617f50
+void sub_617ee0(void* p1, void* p2) {} // 0x617ee0
+uint64_t sub_79bcd0(uint32_t low, uint32_t high, uint32_t mLow, uint32_t mHigh) { return 0; } // 0x79bcd0
+uint32_t sub_79eab0(uint32_t low, uint32_t high, uint32_t dLow, uint32_t dHigh) { return 0; } // 0x79eab0
+
+// 0x00618140
+// Frame timing and input polling.
+bool sub_618140() {
+    // 0x61814c
+    sub_636830(); // 0x636830
+    sub_618010(); // 0x618010
+
+    // 0x618153: Get time (presumably timeGetTime or similar)
+    uint32_t time = timeGetTime(); // 0x618010 wrapper
+    uint64_t time64 = (uint64_t)time << 16;
+    uint32_t timeHigh = (uint32_t)(time64 >> 32);
+    uint32_t timeLow = (uint32_t)time64;
+
+    uint32_t lastTimeLow, lastTimeHigh;
+    if (!(g_dword_e75234 & 1)) {
+        g_dword_e75234 |= 1;
+        lastTimeLow = timeLow;
+        lastTimeHigh = timeHigh;
+    } else {
+        lastTimeLow = g_dword_e6e5e0;
+        lastTimeHigh = g_dword_e6e5e4;
+    }
+
+    uint64_t diff = time64 - (((uint64_t)lastTimeHigh << 32) | lastTimeLow);
+    if ((int64_t)diff >= 0) {
+        if (diff > 0x640000) {
+            diff = 0x640000;
+        }
+    } else {
+        diff = 0;
+    }
+
+    uint64_t totalTime = (((uint64_t)g_dword_c8319c << 32) | g_dword_c83198) + diff;
+    g_dword_c83198 = (uint32_t)totalTime;
+    g_dword_c8319c = (uint32_t)(totalTime >> 32);
+    g_dword_e6e5e0 = timeLow;
+    g_dword_e6e5e4 = timeHigh;
+
+    // 0x6181ca: sub_79bcd0 (multiplication?)
+    // 0x6181d8: sub_79eab0 (division?)
+    // Simplified timing logic for now as these are likely fixed-point math helpers
+    g_dword_c83110 = (uint32_t)sub_79eab0(g_dword_c83198, g_dword_c8319c, 0, 0x10000);
+
+    if ((int32_t)g_dword_c831ac > (int32_t)g_dword_c8319c || 
+        (g_dword_c831ac == g_dword_c8319c && g_dword_c831a8 > g_dword_c83198)) {
+        // 0x618203
+        uint64_t step = (((uint64_t)g_dword_c83194 << 32) | g_dword_c83190);
+        uint64_t next = (((uint64_t)g_dword_c831ac << 32) | g_dword_c831a8) + step;
+        
+        uint32_t idx = g_dword_8e1648 ^ 1;
+        g_qword_c83170[idx] = next;
+        g_dword_c831a8 = (uint32_t)next;
+        g_dword_c831ac = (uint32_t)(next >> 32);
+        g_dword_8e1648 = idx;
+
+        // 0x618241: sub_79bcd0
+        // 0x61824f: sub_79eab0
+        uint32_t val = sub_79eab0(g_dword_c831a8, g_dword_c831ac, 0, 0x10000);
+        
+        // 0x61825d: sub_617f50
+        sub_617f50(&val);
+        
+        // 0x618262: Virtual call
+        if (g_dword_8e1644) {
+            void** vtable = *(void***)g_dword_8e1644;
+            typedef void (__stdcall *PollPtr)(void*, uint32_t*);
+            PollPtr Poll = (PollPtr)vtable[0];
+            Poll(g_dword_8e1644, &val);
+        }
+    }
+
+    // 0x6182ab: More timing/input logic
+    uint64_t limit = (((uint64_t)g_dword_c831a4 << 32) | g_dword_c831a0) + (((uint64_t)g_dword_c8318c << 32) | g_dword_c83188);
+    if ((int64_t)limit <= (int64_t)time64) {
+        // ... simplified ...
+        g_dword_c831a0 = (uint32_t)limit;
+        g_dword_c831a4 = (uint32_t)(limit >> 32);
+        
+        uint32_t val2 = sub_79eab0(g_dword_c831a0, g_dword_c831a4, 0, 0x10000);
+        g_dword_c8311c = val2;
+        
+        sub_617ee0(&g_dword_c83118, &val2);
+        
+        if (g_dword_8e1644) {
+            void** vtable = *(void***)g_dword_8e1644;
+            typedef void (__stdcall *PollPtr)(void*, uint32_t*);
+            PollPtr Poll = (PollPtr)vtable[1]; // 0x04 / 4 = 1
+            Poll(g_dword_8e1644, &val2);
+        }
+        return true;
+    }
+
+    return false;
+}
 
 // 0x0068dac0
 // Unacquires input devices (keyboard and joysticks).
