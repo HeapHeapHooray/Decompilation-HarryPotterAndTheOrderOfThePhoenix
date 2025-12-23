@@ -1,7 +1,7 @@
 ### An attempt to decompile the game Harry Potter and The Order Of The Phoenix using Gemini CLI and Google Antigravity.
 
 ## Currently shows a Window ! 🥳
-
+### NOTE: The meaty stuff seems to be at what's ommited in sub_60dc10 and sub_636830, we'll get to 100 non-stub functions then see what's there !
 # Dependencies
 ### Zig for cross-compiling from Linux to Windows, you can just use your compiler of choice if you are on Windows.
 
