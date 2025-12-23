@@ -276,7 +276,63 @@ bool sub_60da90(HINSTANCE hInstance) {
     return RegisterClassExA(&wc) != 0;
 }
 
-int sub_60db20(void* this_ptr, HINSTANCE hInstance, LPSTR lpCmdLine, int nShowCmd) { return 1; } // 0x60db20
+// 0x0060db20
+// Creates the main window.
+HWND sub_60db20(void* this_ptr, HINSTANCE hInstance, char* lpCmdLine, int nShowCmd) {
+    DWORD dwStyle;
+    DWORD dwExStyle;
+
+    if (g_byte_8afbd9 == 0) {
+        dwStyle = WS_OVERLAPPEDWINDOW;
+        dwExStyle = 0; // The assembly used 3, but 0 is safer for now unless we know what 3 means (WS_EX_TOPMOST | WS_EX_NOPARENTNOTIFY)
+    } else {
+        dwStyle = WS_POPUP;
+        dwExStyle = WS_EX_APPWINDOW | WS_EX_TOPMOST; // 0x2003 approx?
+    }
+
+    RECT rect;
+    rect.left = 0;
+    rect.top = 0;
+    rect.right = g_width;
+    rect.bottom = g_height;
+
+    AdjustWindowRectEx(&rect, dwStyle, FALSE, dwExStyle);
+
+    int width = rect.right - rect.left;
+    int height = rect.bottom - rect.top;
+    
+    // Center the window if windowed
+    int x = CW_USEDEFAULT;
+    int y = CW_USEDEFAULT;
+
+    if (g_byte_8afbd9 == 0) {
+        int screenWidth = GetSystemMetrics(SM_CXSCREEN);
+        int screenHeight = GetSystemMetrics(SM_CYSCREEN);
+        x = (screenWidth - width) / 2;
+        y = (screenHeight - height) / 2;
+    }
+
+    HWND hWnd = CreateWindowExA(
+        dwExStyle,
+        "OrderOfThePhoenixMainWndClass",
+        "Harry Potter and the Order of the Phoenix",
+        dwStyle,
+        x, y, width, height,
+        NULL, NULL, hInstance, NULL
+    );
+
+    if (!hWnd) return NULL;
+
+    if (g_byte_8afbd9 != 0) {
+        SetMenu(hWnd, NULL);
+        SetThreadExecutionState(ES_DISPLAY_REQUIRED | ES_CONTINUOUS); // 0x80000002
+    }
+
+    ShowWindow(hWnd, SW_SHOW);
+    UpdateWindow(hWnd);
+
+    return hWnd;
+}
 void sub_617bf0(const char* cmdLine, const char* key, int* outValue) {} // 0x617bf0
 // Stubs for functions called by sub_60dc10
 void sub_67d310() {} // 0x67d310
