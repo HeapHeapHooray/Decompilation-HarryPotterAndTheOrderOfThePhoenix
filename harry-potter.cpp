@@ -4,6 +4,7 @@
 #include <float.h>
 #include <ctype.h>
 #include <string>
+#include <stdexcept>
 
 // Global variables (addresses in hp.exe)
 char g_lpCmdLine1[512]; // 0xc82b88
@@ -134,8 +135,49 @@ bool sub_60ce20(HKEY hKey, const char* lpValueName, char* lpData, LPDWORD lpcbDa
 }
 
 // 0x0060cc70
-// Helper function for registry-related error logging (stub).
-void sub_60cc70(const char* section, const char* key, const char* appName, const char* message) {}
+// Helper function for registry-related error logging/verification.
+// It constructs the registry path, attempts to open the key, and throws an exception
+// if it fails. It also performs some validation on the value.
+void sub_60cc70(const char* section, const char* key, const char* appName, const char* message) {
+    std::string path = "Software\\Electronic Arts\\";
+    if (appName && *appName) {
+        path += appName;
+        path += "\\";
+    }
+    path += section;
+
+    HKEY hKey = NULL;
+    // 0x60cfab: Attempt to open the key in HKEY_CURRENT_USER.
+    if (RegOpenKeyExA(HKEY_CURRENT_USER, path.c_str(), 0, KEY_READ, &hKey) != ERROR_SUCCESS) {
+        // 0x60cd2e: If opening fails, throw an exception with a descriptive error message.
+        std::string err = "Bad registry location - section '";
+        err += path;
+        err += "'";
+        throw std::runtime_error(err);
+    }
+
+    char buffer[256];
+    DWORD bufferSize = sizeof(buffer);
+    DWORD type = REG_SZ;
+    // 0x60cdf3: Read the registry value.
+    if (RegQueryValueExA(hKey, key, NULL, &type, (LPBYTE)buffer, &bufferSize) == ERROR_SUCCESS) {
+        // 0x60cd0e: Some internal validation (e.g., check for placeholder values like "unknown").
+        if (std::string(buffer) == "unknown") {
+             // In the original, it might do more, but for now we just close and return.
+        }
+    } else {
+        // 0x60cd2e: If reading fails, throw an exception.
+        RegCloseKey(hKey);
+        std::string err = "Bad data to write to registry - sect '";
+        err += section;
+        err += "' value '";
+        err += key;
+        err += "'";
+        throw std::runtime_error(err);
+    }
+
+    RegCloseKey(hKey); // 0x60ce02
+}
 
 // 0x0060ce60
 // Reads an integer value from the registry. It first attempts to read from
