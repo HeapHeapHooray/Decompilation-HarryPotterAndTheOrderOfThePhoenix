@@ -63,6 +63,8 @@ uint32_t g_dword_bf193c = 0; // 0xbf193c
 uint32_t g_dword_bf1930 = 0; // 0xbf1930
 void* g_dword_bf1924 = NULL; // 0xbf1924
 void* g_dword_b95034 = NULL; // 0xb95034
+void* g_dword_e6a42c = NULL; // 0xe6a42c
+void* g_dword_e6a674 = NULL; // 0xe6a674
 
 STICKYKEYS g_stickyKeys; // 0x8afc44
 TOGGLEKEYS g_toggleKeys; // 0x8afc4c
@@ -368,7 +370,6 @@ bool __stdcall sub_617bf0(void* context, const char* key, char** outValue) {
     return false;
 }
 // Stubs for functions called by sub_60dc10
-void sub_68dac0() {} // 0x68dac0
 void sub_618140() {} // 0x618140
 void sub_79ea80(char c) {} // 0x79ea80
 void sub_612f00() {} // 0x612f00
@@ -382,6 +383,55 @@ void sub_67d2e0() {} // 0x67d2e0
 void sub_67cfb0() {} // 0x67cfb0
 void sub_67d0c0() {} // 0x67d0c0
 void sub_66e080() {} // 0x66e080
+void sub_79a712(int enable) {} // 0x79a712 (XInputEnable)
+
+// 0x0068dac0
+// Unacquires input devices (keyboard and joysticks).
+bool sub_68dac0() {
+    // 0x68dac0: Keyboard unacquire
+    if (g_dword_e6a070) {
+        typedef HRESULT (__stdcall *UnacquirePtr)(void*);
+        void* device = g_dword_e6a070;
+        void** vtable = *(void***)device;
+        UnacquirePtr Unacquire = (UnacquirePtr)vtable[8]; // 0x20 / 4 = 8
+        
+        if (Unacquire(device) < 0) {
+            sub_66f810((void*)0x888284); // "cKeyboard: Failed to unacquire"
+        }
+    }
+
+    // 0x68dae2: Another keyboard/input device unacquire
+    if (g_dword_e6a194) {
+        typedef HRESULT (__stdcall *UnacquirePtr)(void*);
+        void* device = g_dword_e6a194;
+        void** vtable = *(void***)device;
+        UnacquirePtr Unacquire = (UnacquirePtr)vtable[8]; // 0x20 / 4 = 8
+        
+        if (Unacquire(device) < 0) {
+            sub_66f810((void*)0x888284);
+        }
+    }
+
+    // 0x68db08: Disable XInput
+    sub_79a712(0); // 0x79a712 (XInputEnable)
+
+    // 0x68db0d: Joystick unacquire loop
+    void** joystickPtrs[2] = { &g_dword_e6a42c, &g_dword_e6a674 };
+    for (int i = 0; i < 2; i++) {
+        void* device = *joystickPtrs[i];
+        if (device) {
+            typedef HRESULT (__stdcall *UnacquirePtr)(void*);
+            void** vtable = *(void***)device;
+            UnacquirePtr Unacquire = (UnacquirePtr)vtable[8]; // 0x20 / 4 = 8
+            
+            if (Unacquire(device) < 0) {
+                sub_66f810((void*)0x88816c); // "cJoystick: Failed to unacquire"
+            }
+        }
+    }
+
+    return true;
+}
 
 // 0x0067d310
 // Checks the cooperative level of the Direct3D device and handles device loss/reset.
