@@ -101,6 +101,14 @@ struct Struct_E6E870 {
     uint32_t field_24; // 0xe6e894
     uint32_t field_28; // 0xe6e898
     uint32_t field_2C; // 0xe6e89c
+    uint32_t field_30; // 0xe6e8a0
+    uint32_t field_34; // 0xe6e8a4
+    uint32_t field_38; // 0xe6e8a8
+    uint32_t field_3C; // 0xe6e8ac
+    uint32_t field_40; // 0xe6e8b0
+    uint32_t field_44; // 0xe6e8b4
+    uint32_t field_48; // 0xe6e8b8
+    uint32_t field_4C; // 0xe6e8bc
 };
 
 Struct_E6E870 g_struct_e6e870; // 0xe6e870
@@ -438,13 +446,24 @@ void sub_6f53d7(void* p) {} // 0x6f53d7
 void sub_616590(void* p) {} // 0x616590
 void sub_6a9f20() {} // 0x6a9f20
 void sub_58b8a0() {} // 0x58b8a0
-void sub_66f810(void* p) {} // 0x66f810
+void sub_66f810(const char* format, ...) {
+    char buffer[2048];
+    va_list args;
+    va_start(args, format);
+    _vsnprintf(buffer, sizeof(buffer), format, args);
+    va_end(args);
+}
 void sub_6a8f90() {} // 0x6a8f90
 void sub_67d2e0() {} // 0x67d2e0
 void sub_67cfb0() {} // 0x67cfb0
 void sub_67d0c0() {} // 0x67d0c0
 void sub_66e080() {} // 0x66e080
 void sub_79a712(int enable) {} // 0x79a712 (XInputEnable)
+void sub_617b60(void* context) {} // 0x617b60
+void sub_68db20() {} // 0x68db20
+void sub_60d220(HWND hWnd) {} // 0x60d220
+void sub_617b90(WPARAM wParam, LPARAM lParam) {} // 0x617b90
+void sub_586d00(int value) {} // 0x586d00
 // 0x0079bcd0
 // 64-bit unsigned multiplication: (low, high) * (mLow, mHigh)
 uint64_t __stdcall sub_79bcd0(uint32_t low, uint32_t high, uint32_t mLow, uint32_t mHigh) {
@@ -461,18 +480,52 @@ int64_t __stdcall sub_79eab0(int32_t low, int32_t high, int32_t dLow, int32_t dH
 }
 
 // 0x00618010
-// Initializes the timer period.
-void sub_618010() {
+// Initializes the timer period and returns elapsed time since first call.
+uint32_t sub_618010() {
     TIMECAPS tc;
     if (timeGetDevCaps(&tc, sizeof(TIMECAPS)) == TIMERR_NOERROR) {
         uint32_t period = tc.wPeriodMin;
         if (period < 1) period = 1;
         timeBeginPeriod(period);
-        g_dword_e6e5e8 = period;
+        uint32_t time = timeGetTime();
+        timeEndPeriod(period);
+        
+        if (!g_byte_e6b388) {
+            g_dword_e6e5e8 = time;
+            g_byte_e6b388 = 1;
+        }
+        return time - g_dword_e6e5e8;
     }
+    return 0;
 }
 
-void sub_636830() {} // 0x636830
+bool sub_63d600(void* p) { return false; } // 0x63d600 stub
+
+void sub_636830() {
+    if (!g_dword_bef7c0) return;
+
+    uint32_t startTime = sub_618010();
+    
+    while (true) {
+        void* p = g_dword_bef7c0;
+        if (!p) break;
+        
+        if (sub_63d600(p)) {
+            // Logic to update g_dword_bef7c0 from p + 0x7c
+            // For now, just break or handle as needed
+            break;
+        }
+        
+        uint32_t currentTime = timeGetTime();
+        if (!g_byte_e6b388) {
+            g_dword_e6e5e8 = currentTime;
+            g_byte_e6b388 = 1;
+        }
+        uint32_t elapsed = currentTime - g_dword_e6e5e8;
+        
+        if (elapsed - startTime >= 2) break;
+    }
+}
 void sub_617f50(void* p) {} // 0x617f50
 void sub_617ee0(void* p1, void* p2) {} // 0x617ee0
 
@@ -480,12 +533,11 @@ void sub_617ee0(void* p1, void* p2) {} // 0x617ee0
 // Frame timing and input polling.
 bool sub_618140() {
     sub_636830();
-    sub_618010();
+    uint32_t elapsed = sub_618010();
 
-    uint32_t time = timeGetTime();
     // 0x618159: shld $0x10, %eax, %edx; shl $0x10, %eax
     // This effectively multiplies the time by 2^16 (65536)
-    uint64_t time64 = (uint64_t)time << 16;
+    uint64_t time64 = (uint64_t)elapsed << 16;
     uint32_t timeHigh = (uint32_t)(time64 >> 32);
     uint32_t timeLow = (uint32_t)time64;
 
@@ -611,7 +663,7 @@ bool sub_68dac0() {
         UnacquirePtr Unacquire = (UnacquirePtr)vtable[8]; // 0x20 / 4 = 8
         
         if (Unacquire(device) < 0) {
-            sub_66f810((void*)0x888284); // "cKeyboard: Failed to unacquire"
+            sub_66f810((const char*)0x888284); // "cKeyboard: Failed to unacquire"
         }
     }
 
@@ -623,7 +675,7 @@ bool sub_68dac0() {
         UnacquirePtr Unacquire = (UnacquirePtr)vtable[8]; // 0x20 / 4 = 8
         
         if (Unacquire(device) < 0) {
-            sub_66f810((void*)0x888284);
+            sub_66f810((const char*)0x888284);
         }
     }
 
@@ -640,7 +692,7 @@ bool sub_68dac0() {
             UnacquirePtr Unacquire = (UnacquirePtr)vtable[8]; // 0x20 / 4 = 8
             
             if (Unacquire(device) < 0) {
-                sub_66f810((void*)0x88816c); // "cJoystick: Failed to unacquire"
+                sub_66f810((const char*)0x88816c); // "cJoystick: Failed to unacquire"
             }
         }
     }
@@ -698,20 +750,20 @@ bool sub_67d310() {
             if (resetHr == (HRESULT)0x88760868) { // D3DERR_DEVICELOST
                 Sleep(0x32);
             } else if (resetHr == (HRESULT)0x88760827) { // D3DERR_DRIVERINTERNALERROR
-                sub_66f810((void*)0x887afc);
+                sub_66f810((const char*)0x887afc);
             } else if (resetHr == (HRESULT)0x8876086c) { // D3DERR_DEVICEHUNG?
-                sub_66f810((void*)0x887b1c);
+                sub_66f810((const char*)0x887b1c);
             } else if (resetHr == (HRESULT)0x8876017c) { // D3DERR_OUTOFVIDEOMEMORY
-                sub_66f810((void*)0x887b34);
+                sub_66f810((const char*)0x887b34);
             } else if (resetHr == (HRESULT)0x8007000e) { // E_OUTOFMEMORY
-                sub_66f810((void*)0x887b50);
+                sub_66f810((const char*)0x887b50);
             }
         }
         return false;
     }
 
     // 0x67d434: Other errors
-    sub_66f810((void*)0x887b68);
+    sub_66f810((const char*)0x887b68);
     return false;
 }
 
@@ -809,11 +861,6 @@ void sub_60dc10() {
 }
 void sub_614330(int height) {} // 0x614330
 void sub_60c150() {} // 0x60c150
-
-// Stub for Window Procedure
-LRESULT CALLBACK sub_60d6d0(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
-    return DefWindowProc(hWnd, msg, wParam, lParam);
-}
 
 // 0x0060deb0
 // Disables or restores accessibility shortcuts (Sticky Keys, Toggle Keys, Filter Keys)
@@ -934,6 +981,79 @@ void __tmainCRTStartup() {
     g_winmain_ret = WinMain((HINSTANCE)0x400000, NULL, lpCmdLine, showWindow); // 0x60dfa0
 
     exit(g_winmain_ret); // 0x7b7260
+}
+
+// 0x0060d6d0
+// Main window procedure.
+LRESULT CALLBACK sub_60d6d0(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam) {
+    if (Msg == WM_SYSCOMMAND) {
+        WPARAM cmd = wParam & 0xFFF0;
+        if (cmd == SC_MINIMIZE || cmd == SC_CLOSE || cmd == SC_SCREENSAVE || cmd == SC_MONITORPOWER) {
+            return 0;
+        }
+    }
+
+    if (Msg >= 2 && Msg <= 0x84) {
+        // Jump table logic simplified to switch
+        switch (Msg) {
+            case WM_DESTROY: { // 0x60d8c0
+                if (g_byte_8afbd9) {
+                    while (ShowCursor(TRUE) <= 0);
+                }
+                PostQuitMessage(0);
+                return 0;
+            }
+            case WM_ACTIVATE: { // 0x60d714
+                if (g_byte_8afbd9 && g_dword_e6b384) {
+                    if (LOWORD(wParam) == WA_INACTIVE) {
+                        sub_617b60(g_dword_bef6d0);
+                        sub_68dac0();
+                    } else {
+                        sub_68db20();
+                    }
+                }
+                break;
+            }
+            case WM_SETFOCUS: { // 0x60d829
+                if (!g_byte_bef6c7) {
+                    while (ShowCursor(FALSE) > 0);
+                }
+                break;
+            }
+            case WM_PAINT: { // 0x60d8e9
+                if (g_byte_8afbd9) {
+                    ValidateRect(hWnd, NULL);
+                } else {
+                    PAINTSTRUCT ps;
+                    BeginPaint(hWnd, &ps);
+                    EndPaint(hWnd, &ps);
+                }
+                return 0;
+            }
+            case WM_CLOSE: { // 0x60d89d
+                if (!g_byte_8afbd9) {
+                    sub_60d220(hWnd);
+                }
+                DestroyWindow(hWnd);
+                return 0;
+            }
+            case WM_SETCURSOR: { // 0x60d70b
+                return 0;
+            }
+        }
+    }
+
+    if (Msg == WM_SYSKEYDOWN || Msg == WM_SYSKEYUP) {
+        sub_617b90(wParam, lParam);
+        return 0;
+    }
+
+    if (Msg == WM_ACTIVATEAPP) {
+        sub_586d00(wParam);
+        return 0;
+    }
+
+    return DefWindowProcA(hWnd, Msg, wParam, lParam);
 }
 
 // 0x0060dfa0
