@@ -86,6 +86,24 @@ uint32_t g_dword_e6e5e8 = 0; // 0xe6e5e8
 uint8_t g_byte_e6b388 = 0; // 0xe6b388
 void* g_dword_bef7c0 = NULL; // 0xbef7c0
 void* g_dword_bef768 = NULL; // 0xbef768
+void* g_ptr_bef728 = NULL; // 0xbef728
+
+struct Struct_E6E870 {
+    void* vtable; // 0xe6e870
+    void* field_4; // 0xe6e874
+    uint32_t field_8; // 0xe6e878
+    uint32_t field_C; // 0xe6e87c
+    uint32_t field_10; // 0xe6e880
+    uint32_t field_14; // 0xe6e884
+    uint32_t field_18; // 0xe6e888
+    uint32_t field_1C; // 0xe6e88c
+    uint32_t field_20; // 0xe6e890
+    uint32_t field_24; // 0xe6e894
+    uint32_t field_28; // 0xe6e898
+    uint32_t field_2C; // 0xe6e89c
+};
+
+Struct_E6E870 g_struct_e6e870; // 0xe6e870
 
 STICKYKEYS g_stickyKeys; // 0x8afc44
 TOGGLEKEYS g_toggleKeys; // 0x8afc4c
@@ -397,7 +415,25 @@ bool __stdcall sub_617bf0(void* context, const char* key, char** outValue) {
 int64_t sub_79ea80(int64_t value, uint8_t shift) {
     return value >> shift;
 }
-void sub_612f00() {} // 0x612f00
+// 0x00612f00
+// Initializes a global structure at 0xe6e870.
+void* sub_612f00() {
+    g_struct_e6e870.field_10 = 0;
+    g_struct_e6e870.field_14 = 0;
+    g_struct_e6e870.field_18 = 0;
+    g_struct_e6e870.field_1C = 0;
+    g_struct_e6e870.field_20 = 0;
+    g_struct_e6e870.field_24 = 0;
+    g_struct_e6e870.field_28 = 0;
+    g_struct_e6e870.field_2C = 0;
+    
+    g_struct_e6e870.vtable = (void*)0x883f3c;
+    g_struct_e6e870.field_4 = (void*)0x883f4c;
+    
+    g_ptr_bef728 = &g_struct_e6e870;
+    
+    return &g_struct_e6e870;
+}
 void sub_6f53d7(void* p) {} // 0x6f53d7
 void sub_616590(void* p) {} // 0x616590
 void sub_6a9f20() {} // 0x6a9f20
