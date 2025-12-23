@@ -728,7 +728,23 @@ void sub_6a8f90() {
         g_dword_bf1b30 = 0;
     }
 }
-void sub_67d2e0() {} // 0x67d2e0
+// 0x0067d2e0
+// Updates the global variable g_dword_bf193c with the available texture memory in MB.
+// It calls the Direct3D GetAvailableTextureMem virtual function.
+void sub_67d2e0() {
+    if (g_dword_bf1920 == NULL) return;
+    
+    // Call GetAvailableTextureMem (virtual function at index 4)
+    typedef UINT (__stdcall *GetAvailableTextureMemPtr)(void*);
+    void* device = g_dword_bf1920;
+    void** vtable = *(void***)device;
+    GetAvailableTextureMemPtr GetAvailableTextureMem = (GetAvailableTextureMemPtr)vtable[4]; // 0x10 / 4 = 4
+    
+    UINT availableMem = GetAvailableTextureMem(device);
+    
+    // 0x67d2f6: Convert bytes to MB (shift right by 20)
+    g_dword_bf193c = availableMem >> 20;
+}
 void sub_67cfb0() {} // 0x67cfb0
 void sub_67d0c0() {} // 0x67d0c0
 void sub_66e080() {} // 0x66e080
