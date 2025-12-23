@@ -4,6 +4,7 @@
 #include <float.h>
 #include <ctype.h>
 #include <string>
+#include <string.h>
 #include <stdexcept>
 
 // Global variables (addresses in hp.exe)
@@ -333,7 +334,34 @@ HWND sub_60db20(void* this_ptr, HINSTANCE hInstance, char* lpCmdLine, int nShowC
 
     return hWnd;
 }
-void sub_617bf0(const char* cmdLine, const char* key, int* outValue) {} // 0x617bf0
+// 0x00617bf0
+// Searches for a key in the parsed command line arguments.
+// If found, it optionally returns the value string pointer.
+// Returns true if found, false otherwise.
+bool __stdcall sub_617bf0(void* context, const char* key, char** outValue) {
+    // context is a pointer to the start of the command line global block (0xc82b88)
+    // 0x617bf7: Initialize loop counter (esi = 0)
+    // 0x617bf9: Compare counter with count at 0x584(ebx)
+    
+    char** keys = (char**)((char*)context + 0x480); // 0xc83008 (g_argKeys)
+    char** values = (char**)((char*)context + 0x500); // 0xc83088 (g_argValues)
+    int count = *(int*)((char*)context + 0x584); // 0xc8310c (g_argCount)
+
+    for (int i = 0; i < count; i++) {
+        // 0x617c18: Call _stricmp (pointer at 0x7b72d8)
+        if (_stricmp(keys[i], key) == 0) {
+            // 0x617c38: Found the key
+            if (outValue) {
+                // 0x617c40: Store the pointer to the value string
+                *outValue = values[i];
+            }
+            return true; // 0x617c4c
+        }
+    }
+    
+    // 0x617c32: Not found
+    return false;
+}
 // Stubs for functions called by sub_60dc10
 void sub_67d310() {} // 0x67d310
 void sub_68dac0() {} // 0x68dac0
