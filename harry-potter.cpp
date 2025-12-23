@@ -29,11 +29,14 @@ int g_aaMode = 0; // 0xbf1974
 int g_useAdditionalModes = 0; // 0xbf197c
 HWND g_hWnd = NULL; // 0xbef6cc
 float g_fUnknown_8ae1dc = 0.0f; // 0x8ae1dc
+uint8_t g_byte_8afbd9 = 0; // 0x8afbd9
 
 STICKYKEYS g_stickyKeys; // 0x8afc44
 TOGGLEKEYS g_toggleKeys; // 0x8afc4c
 FILTERKEYS g_filterKeys; // 0x8afc54
 
+// Forward declaration for Window Procedure
+LRESULT CALLBACK sub_60d6d0(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam); // 0x60d6d0
 
 // 0x00617d70
 // Parses a single token from a string, handling quoted strings.
@@ -215,12 +218,47 @@ int sub_60ce60(const char* section, const char* key, const char* appName, int de
     return result;
 }
 
-bool sub_60da90() { return true; } // 0x60da90
+// 0x0060da90
+// Registers the main window class.
+bool sub_60da90(HINSTANCE hInstance) {
+    UnregisterClassA("OrderOfThePhoenixMainWndClass", hInstance);
+
+    WNDCLASSEXA wc;
+    // Initialize with 0
+    memset(&wc, 0, sizeof(wc));
+
+    if (g_byte_8afbd9 == 0) {
+        wc.style = 0x2020; // CS_BYTEALIGNWINDOW | CS_OWNDC (?)
+        wc.hCursor = NULL;
+    } else {
+        wc.style = 0x2000; // CS_BYTEALIGNWINDOW (?)
+        wc.hCursor = LoadCursorA(NULL, IDC_ARROW);
+    }
+
+    wc.cbSize = sizeof(WNDCLASSEXA);
+    wc.lpfnWndProc = (WNDPROC)sub_60d6d0;
+    wc.cbClsExtra = 0;
+    wc.cbWndExtra = 0;
+    wc.hInstance = hInstance;
+    wc.hIcon = NULL;
+    wc.hbrBackground = (HBRUSH)GetStockObject(BLACK_BRUSH);
+    wc.lpszMenuName = NULL;
+    wc.lpszClassName = "OrderOfThePhoenixMainWndClass";
+    wc.hIconSm = NULL;
+
+    return RegisterClassExA(&wc) != 0;
+}
+
 int sub_60db20(void* this_ptr, HINSTANCE hInstance, LPSTR lpCmdLine, int nShowCmd) { return 1; } // 0x60db20
 void sub_617bf0(const char* cmdLine, const char* key, int* outValue) {} // 0x617bf0
 void sub_60dc10() {} // 0x60dc10
 void sub_614330(int height) {} // 0x614330
 void sub_60c150() {} // 0x60c150
+
+// Stub for Window Procedure
+LRESULT CALLBACK sub_60d6d0(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
+    return DefWindowProc(hWnd, msg, wParam, lParam);
+}
 
 // 0x0060deb0
 // Disables or restores accessibility shortcuts (Sticky Keys, Toggle Keys, Filter Keys)
@@ -373,7 +411,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     }
 
     // 0x60e068: Perform some system checks.
-    if (!sub_60da90()) { // 0x60da90
+    if (!sub_60da90(hInstance)) { // 0x60da90
         return 0;
     }
 
