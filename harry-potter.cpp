@@ -686,7 +686,48 @@ void sub_66f810(const char* format, ...) {
     _vsnprintf(buffer, sizeof(buffer), format, args);
     va_end(args);
 }
-void sub_6a8f90() {} // 0x6a8f90
+uint32_t g_dword_bf1b1c = 0; // 0xbf1b1c
+void* g_ptr_bf1b20 = NULL; // 0xbf1b20
+uint32_t g_dword_bf1b18 = 0; // 0xbf1b18
+uint32_t g_dword_bf1b2c = 0; // 0xbf1b2c
+HANDLE g_handle_bf1b34 = NULL; // 0xbf1b34
+uint32_t g_dword_bf1b30 = 0; // 0xbf1b30
+
+void sub_611800() {} // 0x611800 stub
+void sub_6119c0(void* p) {} // 0x6119c0 stub
+void sub_6ace30() {} // 0x6ace30 stub
+void sub_6108c0() {} // 0x6108c0 stub
+void sub_6ac930() {} // 0x6ac930 stub
+
+// 0x006a8f90
+// Performs general cleanup of global resources and handles.
+// It checks various global flags and pointers, calling specialized cleanup functions
+// and closing open handles (like g_handle_bf1b34).
+void sub_6a8f90() {
+    // 0xec6613: Check first cleanup condition
+    if (g_dword_bf1b1c != 0) {
+        sub_611800(); // 0x611800
+        sub_6119c0(g_ptr_bf1b20); // 0x6119c0
+        g_dword_bf1b18 = 0;
+        g_dword_bf1b1c = 0;
+    }
+
+    // 0xec6636 - 0xec6640: Call additional cleanup functions
+    sub_6ace30(); // 0x6ace30
+    sub_6108c0(); // 0x6108c0
+    sub_6ac930(); // 0x6ac930
+
+    // 0xec6645: Check if a handle needs to be closed
+    if (g_dword_bf1b2c != 0) {
+        if (g_handle_bf1b34 != NULL) {
+            // 0xec6659: CloseHandle(g_handle_bf1b34) (0x7b7158)
+            CloseHandle(g_handle_bf1b34);
+        }
+        g_dword_bf1b2c = 0;
+        g_handle_bf1b34 = NULL;
+        g_dword_bf1b30 = 0;
+    }
+}
 void sub_67d2e0() {} // 0x67d2e0
 void sub_67cfb0() {} // 0x67cfb0
 void sub_67d0c0() {} // 0x67d0c0
