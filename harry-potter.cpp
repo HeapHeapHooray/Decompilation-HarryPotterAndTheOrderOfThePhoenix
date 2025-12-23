@@ -117,8 +117,15 @@ STICKYKEYS g_stickyKeys; // 0x8afc44
 TOGGLEKEYS g_toggleKeys; // 0x8afc4c
 FILTERKEYS g_filterKeys; // 0x8afc54
 
-// Forward declaration for Window Procedure
+// Forward declarations
 LRESULT CALLBACK sub_60d6d0(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam); // 0x60d6d0
+uint32_t sub_618010(); // 0x618010
+extern "C" bool sub_68da30(); // 0x68da30
+extern "C" void sub_6a9f20(void* p); // 0x6a9f20
+extern "C" void sub_617b60(void* p); // 0x617b60
+extern "C" bool sub_68dac0(); // 0x68dac0
+void sub_66f810(const char* format, ...); // 0x66f810
+void sub_79a712(int enable); // 0x79a712
 
 // 0x00617d70
 // Parses a single token from a string, handling quoted strings.
@@ -959,8 +966,83 @@ void sub_66e080() {
     }
 }
 void sub_79a712(int enable) {} // 0x79a712 (XInputEnable)
-void sub_617b60(void* context) {} // 0x617b60
-void sub_68db20() {} // 0x68db20
+// 0x00617b60
+// Performs specific operations on sub-objects of the passed parameter.
+// It calls two virtual functions at index 4 and index 8 respectively.
+void sub_617b60(void* p) {
+    uint8_t* pObj = (uint8_t*)p;
+    if (!pObj) return;
+
+    // 0x617b66: Get sub-object at offset 0x0c
+    uint8_t* pSubObj = *(uint8_t**)(pObj + 0x0c);
+    if (pSubObj) {
+        void** vtable = *(void***)pSubObj;
+        // 0x617b6e: Call virtual function at index 4 (offset 0x10)
+        typedef void* (__thiscall *FuncPtr1)(void*);
+        void* result = ((FuncPtr1)vtable[4])(pSubObj);
+        
+        if (result) {
+            uint8_t* pRes = (uint8_t*)result;
+            // 0x617b70: Get final object at offset 0x218 from result
+            void* pFinalObj = *(void**)(pRes + 0x218);
+            if (pFinalObj) {
+                void** vtable2 = *(void***)pFinalObj;
+                // 0x617b80: Call virtual function at index 8 (offset 0x20)
+                typedef void (__stdcall *FuncPtr2)(void*);
+                ((FuncPtr2)vtable2[8])(pFinalObj);
+            }
+        }
+    }
+}
+
+// 0x0068da30
+// Acquires input devices (keyboard and joysticks).
+extern "C" bool sub_68da30() {
+    // 0x68da30: Keyboard acquire
+    if (g_dword_e6a070) {
+        typedef HRESULT (__stdcall *AcquirePtr)(void*);
+        void* device = g_dword_e6a070;
+        void** vtable = *(void***)device;
+        AcquirePtr Acquire = (AcquirePtr)vtable[7]; // 0x1c / 4 = 7
+        
+        if (Acquire(device) < 0) {
+            sub_66f810((const char*)0x88825c); // "cKeyboard: Failed to acquire"
+        }
+    }
+
+    // 0x68da52: Another keyboard/input device acquire
+    if (g_dword_e6a194) {
+        typedef HRESULT (__stdcall *AcquirePtr)(void*);
+        void* device = g_dword_e6a194;
+        void** vtable = *(void***)device;
+        AcquirePtr Acquire = (AcquirePtr)vtable[7]; // 0x1c / 4 = 7
+        
+        if (Acquire(device) < 0) {
+            sub_66f810((const char*)0x888330); // "cKeyboard: Failed to acquire (2)"
+        }
+    }
+
+    // 0x68da76: Enable XInput
+    sub_79a712(1);
+
+    // 0x68da7d: Joystick acquire loop
+    void** joystickPtrs[2] = { &g_dword_e6a42c, &g_dword_e6a674 };
+    for (int i = 0; i < 2; i++) {
+        void* device = *joystickPtrs[i];
+        if (device) {
+            typedef HRESULT (__stdcall *AcquirePtr)(void*);
+            void** vtable = *(void***)device;
+            AcquirePtr Acquire = (AcquirePtr)vtable[7]; // 0x1c / 4 = 7
+            
+            if (Acquire(device) < 0) {
+                sub_66f810((const char*)0x88814c); // "cJoystick: Failed to acquire"
+            }
+        }
+    }
+
+    return true;
+}
+
 void sub_60d220(HWND hWnd) {} // 0x60d220
 void sub_617b90(WPARAM wParam, LPARAM lParam) {} // 0x617b90
 void sub_586d00(int value) {} // 0x586d00
@@ -1515,7 +1597,7 @@ LRESULT CALLBACK sub_60d6d0(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam) {
                         sub_617b60(g_dword_bef6d0);
                         sub_68dac0();
                     } else {
-                        sub_68db20();
+                        sub_68da30();
                     }
                 }
                 break;
