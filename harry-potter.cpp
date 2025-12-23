@@ -814,7 +814,96 @@ void sub_67cfb0() {
     // 0x67d0b5: Final cleanup call
     sub_6836e0();
 }
-void sub_67d0c0() {} // 0x67d0c0
+uint32_t g_dword_8ae1e8 = 0; // 0x8ae1e8
+uint32_t g_dword_8ae1e4 = 0; // 0x8ae1e4
+uint8_t g_byte_8ae1fe = 0; // 0x8ae1fe
+uint8_t g_byte_8ae1fd = 0; // 0x8ae1fd
+
+void sub_675950() {} // 0x675950 stub
+void sub_67b820() {} // 0x67b820 stub
+void sub_67bb20() {} // 0x67bb20 stub
+void* sub_66dfe0() { return NULL; } // 0x66dfe0 stub
+void sub_674430() {} // 0x674430 stub
+
+// 0x0067d0c0
+// Restores Direct3D resources after a device reset.
+// It re-acquires render targets and depth stencil surfaces.
+void sub_67d0c0() {
+    sub_675950();
+    if (g_dword_b95034 == NULL) {
+        sub_67b820();
+    }
+    sub_67bb20();
+
+    // 0x67d0f5: Get current render target (index 5 of g_dword_bf1924)
+    if (g_dword_bf1924 != NULL) {
+        void** vtableDev = *(void***)g_dword_bf1924;
+        typedef HRESULT (__stdcall *GetRenderTargetPtr)(void*, uint32_t, void**);
+        ((GetRenderTargetPtr)vtableDev[5])(g_dword_bf1924, 0, (void**)&g_dword_bf1930);
+    }
+    
+    g_dword_af1390 = (uint32_t)g_dword_bf1930;
+
+    // 0x67d135: Get surface description (index 12)
+    uint32_t desc[8] = {0};
+    if (g_dword_af1390 != 0) {
+        void* pObj30 = (void*)g_dword_af1390;
+        void** vtable30 = *(void***)pObj30;
+        typedef HRESULT (__stdcall *GetDescPtr)(void*, uint32_t*);
+        ((GetDescPtr)vtable30[12])(pObj30, desc); // 0x30 / 4 = 12
+    }
+
+    // 0x67d167: Create depth stencil surface (index 29 of g_dword_bf1920)
+    if (g_dword_bf1920 != NULL) {
+        void** vtableD3D = *(void***)g_dword_bf1920;
+        typedef HRESULT (__stdcall *CreateDSSPtr)(void*, UINT, UINT, uint32_t, uint32_t, uint32_t, BOOL, void**, HANDLE*);
+        ((CreateDSSPtr)vtableD3D[29])(g_dword_bf1920, g_dword_8ae1e4, g_dword_8ae1e8, 0, 0, 0, FALSE, (void**)&g_ptr_bf1938, NULL);
+    }
+
+    // 0x67d184: Conditional setup
+    if (g_filterFlip == 0) {
+        if (g_byte_8ae1fe != 0 && g_byte_8ae1fd != 0) {
+            void* pObj66 = sub_66dfe0();
+            if (pObj66) {
+                uint32_t flags = *(uint32_t*)((uint8_t*)pObj66 + 0x3c);
+                if (!(flags & 0x100) && !(flags & 0x02)) {
+                     // 0x67d1ee: Set render target (index 23)
+                     if (g_dword_bf1920 != NULL) {
+                         void** vtableD3D = *(void***)g_dword_bf1920;
+                         typedef HRESULT (__stdcall *SetRTPtr)(void*, uint32_t, void*);
+                         ((SetRTPtr)vtableD3D[23])(g_dword_bf1920, 0, (void*)g_dword_bf1930);
+                     }
+                     
+                     // 0x67d205: Release old target
+                     if (g_dword_bf1930 != 0) {
+                         void* pObj30 = (void*)g_dword_bf1930;
+                         void** vtable30 = *(void***)pObj30;
+                         ((ULONG (__stdcall *)(void*))vtable30[2])(pObj30);
+                     }
+                     
+                     g_ptr_bf1934 = NULL; // Placeholder for the result of the complex call at 0x67d1db
+                     g_dword_bf1930 = g_dword_af1390;
+                }
+            }
+        }
+    }
+
+    // 0x67d252: Set depth stencil surface (index 37)
+    if (g_dword_bf1920 != NULL) {
+        void** vtableD3D = *(void***)g_dword_bf1920;
+        typedef HRESULT (__stdcall *SetDSSPtr)(void*, void*);
+        ((SetDSSPtr)vtableD3D[37])(g_dword_bf1920, (void*)g_dword_af1390);
+    }
+
+    // 0x67d270: Set render target (index 39)
+    if (g_dword_bf1920 != NULL) {
+        void** vtableD3D = *(void***)g_dword_bf1920;
+        typedef HRESULT (__stdcall *SetRTPtr)(void*, uint32_t, void*);
+        ((SetRTPtr)vtableD3D[39])(g_dword_bf1920, 0, g_ptr_bf1938);
+    }
+
+    sub_674430();
+}
 void sub_66e080() {} // 0x66e080
 void sub_79a712(int enable) {} // 0x79a712 (XInputEnable)
 void sub_617b60(void* context) {} // 0x617b60
