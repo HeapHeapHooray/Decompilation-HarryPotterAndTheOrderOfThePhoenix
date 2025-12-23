@@ -391,7 +391,12 @@ bool __stdcall sub_617bf0(void* context, const char* key, char** outValue) {
     return false;
 }
 // Stubs for functions called by sub_60dc10
-void sub_79ea80(char c) {} // 0x79ea80
+// 0x0079ea80
+// 64-bit arithmetic shift right helper.
+// Takes a 64-bit value and a shift count.
+int64_t sub_79ea80(int64_t value, uint8_t shift) {
+    return value >> shift;
+}
 void sub_612f00() {} // 0x612f00
 void sub_6f53d7(void* p) {} // 0x6f53d7
 void sub_616590(void* p) {} // 0x616590
@@ -715,7 +720,8 @@ void sub_60dc10() {
             // Loop back to start (implicit in while(true)) - 0x60dd4e jmp 0x60de67 (logic simplified)
         } else {
              // 0x60dd53: Game Update
-             sub_79ea80(0x10); // 0x79ea80
+             uint64_t timeVal = ((uint64_t)g_dword_c8318c << 32) | g_dword_c83188;
+             int64_t shiftedTime = sub_79ea80(timeVal, 0x10); // 0x79ea80
              
              // ... time calculations ...
              // 0x60dd68 - 0x60ddb6: FPU and time logic
