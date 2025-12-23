@@ -460,7 +460,75 @@ int sub_6f53d7(void* pFunc) {
     // If sub_6f5338 returned NULL (failure), this returns -1.
     return (result != NULL) ? 0 : -1;
 }
-void sub_616590(void* p) {} // 0x616590
+// 0x00616590
+// Scans through several internal containers and lists to find the maximum
+// value of a specific field (offset 0x4, masked with 0x7ffffff8).
+// This is likely part of a custom memory manager or object allocator,
+// potentially finding the largest free block or highest allocated address.
+uint32_t sub_616590(void* p) {
+    uint8_t* pObj = (uint8_t*)p;
+    
+    // 0xeb6dbd: Get pointer to a structure that starts with a CRITICAL_SECTION (0x7b7084)
+    void* pSync = *(void**)(pObj + 0x4e4);
+    if (pSync) {
+        EnterCriticalSection((LPCRITICAL_SECTION)pSync);
+        // 0xeb6dcf: Increment a counter located immediately after the CRITICAL_SECTION (at offset 24)
+        (*(uint32_t*)((uint8_t*)pSync + 24))++;
+    }
+
+    uint32_t maxVal = 0;
+
+    // 0xeb6dd3: Initial object at offset 0x440
+    uint8_t* pSubObj440 = *(uint8_t**)(pObj + 0x440);
+    if (pSubObj440) {
+        // 0xeb6de3: Get field at +0x4 and mask flags
+        maxVal = *(uint32_t*)(pSubObj440 + 0x4) & 0x7FFFFFF8;
+
+        // 0xeb6dec - 0xeb6e0c: Scan an array of 127 entries at offset 0x428 (backwards)
+        uint8_t* pArrayEntry = pObj + 0x428;
+        for (int i = 0xFE; i >= 0x02; i -= 2) {
+            uint8_t* entry = *(uint8_t**)pArrayEntry;
+            // 0xeb6dfe: Check if the entry is valid/active
+            if (*(uint8_t**)(entry + 0x0C) != entry) {
+                uint32_t val = *(uint32_t*)(entry + 0x04) & 0x7FFFFFF8;
+                if (val > maxVal) maxVal = val;
+            }
+            pArrayEntry -= 8;
+        }
+    }
+
+    // 0xeb6e1e - 0xeb6e3d: Scan a circular linked list starting at offset 0x3C
+    uint8_t* listHead = *(uint8_t**)(pObj + 0x3C);
+    uint8_t* listSentinel = pObj + 0x30;
+    while (listHead != listSentinel) {
+        uint32_t val = *(uint32_t*)(listHead + 0x04) & 0x7FFFFFF8;
+        if (val > maxVal) maxVal = val;
+        listHead = *(uint8_t**)(listHead + 0x0C);
+    }
+
+    // 0xeb6e3f: If found max is less than a threshold at +0x4, check another array
+    if (maxVal < *(uint32_t*)(pObj + 0x04)) {
+        // 0xeb6e44 - 0xeb6e5a: Scan an array of 10 entries at offset 0x2C (backwards)
+        uint8_t* pArrayEntry2 = pObj + 0x2C;
+        for (int i = 9; i >= 0; i--) {
+            uint8_t* entry = *(uint8_t**)pArrayEntry2;
+            if (entry) {
+                uint32_t val = *(uint32_t*)(entry + 0x04) & 0x7FFFFFF8;
+                if (val > maxVal) maxVal = val;
+            }
+            pArrayEntry2 -= 4;
+        }
+    }
+
+    if (pSync) {
+        // 0xeb6e70: Decrement the counter
+        (*(uint32_t*)((uint8_t*)pSync + 24))--;
+        // 0xeb6e75: Leave the critical section (0x7b7080)
+        LeaveCriticalSection((LPCRITICAL_SECTION)pSync);
+    }
+
+    return maxVal;
+}
 void sub_6a9f20() {} // 0x6a9f20
 void sub_58b8a0() {} // 0x58b8a0
 void sub_66f810(const char* format, ...) {
