@@ -58,6 +58,11 @@ float g_float_845320 = 0.0f; // 0x845320
 DWORD g_dword_8afb08 = 0; // 0x8afb08
 void* g_dword_e6b2dc = NULL; // 0xe6b2dc
 void* g_dword_bef6e4 = NULL; // 0xbef6e4
+uint8_t g_byte_bf18aa = 0; // 0xbf18aa
+uint32_t g_dword_bf193c = 0; // 0xbf193c
+uint32_t g_dword_bf1930 = 0; // 0xbf1930
+void* g_dword_bf1924 = NULL; // 0xbf1924
+void* g_dword_b95034 = NULL; // 0xb95034
 
 STICKYKEYS g_stickyKeys; // 0x8afc44
 TOGGLEKEYS g_toggleKeys; // 0x8afc4c
@@ -363,7 +368,6 @@ bool __stdcall sub_617bf0(void* context, const char* key, char** outValue) {
     return false;
 }
 // Stubs for functions called by sub_60dc10
-void sub_67d310() {} // 0x67d310
 void sub_68dac0() {} // 0x68dac0
 void sub_618140() {} // 0x618140
 void sub_79ea80(char c) {} // 0x79ea80
@@ -374,6 +378,77 @@ void sub_6a9f20() {} // 0x6a9f20
 void sub_58b8a0() {} // 0x58b8a0
 void sub_66f810(void* p) {} // 0x66f810
 void sub_6a8f90() {} // 0x6a8f90
+void sub_67d2e0() {} // 0x67d2e0
+void sub_67cfb0() {} // 0x67cfb0
+void sub_67d0c0() {} // 0x67d0c0
+void sub_66e080() {} // 0x66e080
+
+// 0x0067d310
+// Checks the cooperative level of the Direct3D device and handles device loss/reset.
+bool sub_67d310() {
+    if (g_dword_bf1920 == NULL) {
+        return true;
+    }
+
+    sub_67d2e0(); // 0x67d2e0
+
+    // Call TestCooperativeLevel (virtual function at offset 0x0c)
+    typedef HRESULT (__stdcall *TestCooperativeLevelPtr)(void*);
+    void* device = g_dword_bf1920;
+    void** vtable = *(void***)device;
+    TestCooperativeLevelPtr TestCooperativeLevel = (TestCooperativeLevelPtr)vtable[3]; // 0x0c / 4 = 3
+    
+    HRESULT hr = TestCooperativeLevel(device);
+
+    if (hr >= 0) {
+        // 0x67d449: Device is fine
+        g_byte_bf18aa = 0;
+        return true;
+    }
+
+    // 0x67d352: Device is lost or needs reset
+    g_byte_bf18aa = 1;
+
+    if (hr == (HRESULT)0x88760868) { // D3DERR_DEVICELOST
+        // 0x67d362
+        Sleep(0x32);
+        return false;
+    }
+
+    if (hr == (HRESULT)0x88760869) { // D3DERR_DEVICENOTRESET
+        // 0x67d37e
+        sub_67cfb0(); // 0x67cfb0
+
+        // Call Reset (virtual function at offset 0x40)
+        typedef HRESULT (__stdcall *ResetPtr)(void*, void*);
+        ResetPtr Reset = (ResetPtr)vtable[16]; // 0x40 / 4 = 16
+        
+        // The assembly passes a pointer to some parameters at 0xb94af8
+        HRESULT resetHr = Reset(device, (void*)0xb94af8);
+
+        if (resetHr >= 0) {
+            sub_67d0c0(); // 0x67d0c0
+        } else {
+            // 0x67d3a3: Handle reset failure
+            if (resetHr == (HRESULT)0x88760868) { // D3DERR_DEVICELOST
+                Sleep(0x32);
+            } else if (resetHr == (HRESULT)0x88760827) { // D3DERR_DRIVERINTERNALERROR
+                sub_66f810((void*)0x887afc);
+            } else if (resetHr == (HRESULT)0x8876086c) { // D3DERR_DEVICEHUNG?
+                sub_66f810((void*)0x887b1c);
+            } else if (resetHr == (HRESULT)0x8876017c) { // D3DERR_OUTOFVIDEOMEMORY
+                sub_66f810((void*)0x887b34);
+            } else if (resetHr == (HRESULT)0x8007000e) { // E_OUTOFMEMORY
+                sub_66f810((void*)0x887b50);
+            }
+        }
+        return false;
+    }
+
+    // 0x67d434: Other errors
+    sub_66f810((void*)0x887b68);
+    return false;
+}
 
 // 0x0060dc10
 // Main Message Loop and Game Update Loop
