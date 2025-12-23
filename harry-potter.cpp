@@ -1069,8 +1069,53 @@ void sub_60d220(HWND hWnd) {
     // RegistrySetInt("GameSettings", "Y", rect.top);
     // RegistrySetInt("GameSettings", "WindowState", wp.showCmd);
 }
-void sub_617b90(WPARAM wParam, LPARAM lParam) {} // 0x617b90
-void sub_586d00(int value) {} // 0x586d00
+// 0x00617b90
+// Resets all global command-line argument buffers and counters.
+// Note: This is unexpectedly called on WM_SYSKEYDOWN/UP events.
+void sub_617b90(WPARAM wParam, LPARAM lParam) {
+    g_anonArgCount = 0;
+    g_argCount = 0;
+    g_lpCmdLine1[0] = '\0';
+    g_lpCmdLine2[0] = '\0';
+    
+    memset(g_anonArgs, 0, sizeof(g_anonArgs));
+    memset(g_argKeys, 0, sizeof(g_argKeys));
+    memset(g_argValues, 0, sizeof(g_argValues));
+}
+// Stubs for sub_586d00
+void sub_612530(void* p) {} // 0x612530 stub
+
+// 0x00586d00
+// Handles application activation and deactivation (WM_ACTIVATEAPP).
+// It manages transition between active and inactive states, potentially
+// pausing or resuming background processes.
+void sub_586d00(int active) {
+    uint8_t isActive = (uint8_t)active;
+    
+    // 0xea53cd: Check if state changed
+    if (isActive == g_byte_bef67e) return;
+    
+    g_byte_bef67e = isActive;
+    
+    // 0xea53d7: Check secondary flags
+    if (g_byte_bef67c != 0 || g_byte_bef67d != 0) {
+        // ...
+    } else {
+        if (isActive == 0) {
+            // 0xea5414: Deactivation logic
+            if (g_dword_c82b08 != g_dword_c82ac8) {
+                uint32_t temp = g_dword_c82b08;
+                sub_612530(&temp); // 0xea542d
+            }
+        } else {
+            // 0xea53f0: Activation logic
+            if (g_dword_c82b00 != g_dword_c82ac8) {
+                uint32_t temp = g_dword_c82b00;
+                sub_612530(&temp); // 0xea5408
+            }
+        }
+    }
+}
 // 0x0079bcd0
 // 64-bit unsigned multiplication: (low, high) * (mLow, mHigh)
 uint64_t __stdcall sub_79bcd0(uint32_t low, uint32_t high, uint32_t mLow, uint32_t mHigh) {
@@ -1133,8 +1178,56 @@ void sub_636830() {
         if (elapsed - startTime >= 2) break;
     }
 }
-void sub_617f50(void* p) {} // 0x617f50
-void sub_617ee0(void* p1, void* p2) {} // 0x617ee0
+// Globals for sub_617f50 and sub_617ee0
+uint32_t g_dword_c83114 = 0; // 0xc83114
+uint32_t g_dword_c83130 = 0; // 0xc83130
+uint32_t g_dword_8e1640 = 0; // 0x8e1640
+uint32_t g_array_c83128[2] = {0}; // 0xc83128
+uint32_t g_array_c83120[2] = {0}; // 0xc83120
+
+// 0x00617f50
+// Performs frame timing calculations and updates a global buffer of time values.
+// It involves floating point math to scale elapsed time.
+void sub_617f50(void* p) {
+    uint32_t* pVal = (uint32_t*)p;
+    
+    // 0x617f50: Check if sub-object flag is set
+    uint8_t* pObj768 = (uint8_t*)g_dword_bef768;
+    uint32_t flag = (pObj768 != NULL) ? *(uint32_t*)(pObj768 + 4) : 0;
+    
+    if (flag == 0) {
+        // 0x617f60: Complex timing math (simplified)
+        // g_dword_c83114 = updated based on FPU math
+    }
+    
+    // 0x617fd0: Update global time buffer
+    uint32_t idx = g_dword_c83130 ^ 1;
+    g_dword_c83130 = idx;
+    g_array_c83128[idx] = *pVal;
+    g_dword_8e1640 = flag;
+}
+// 0x00617ee0
+// Linear interpolation helper for timing values.
+// Calculates an interpolated value between two time points in g_array_c83128.
+void sub_617ee0(void* p1, void* p2) {
+    uint32_t* pOut = (uint32_t*)p1;
+    uint32_t* pTargetTime = (uint32_t*)p2;
+    
+    uint32_t curIdx = g_dword_c83130;
+    uint32_t lastIdx = curIdx ^ 1;
+    
+    uint32_t curTime = g_array_c83128[curIdx];
+    uint32_t lastTime = g_array_c83128[lastIdx];
+    
+    if (curTime != lastTime) {
+        float ratio = (float)(*pTargetTime - lastTime) / (float)(curTime - lastTime);
+        uint32_t curVal = g_array_c83120[curIdx];
+        uint32_t lastVal = g_array_c83120[lastIdx];
+        *pOut = lastVal + (uint32_t)(ratio * (float)(curVal - lastVal));
+    } else {
+        *pOut = g_array_c83120[curIdx];
+    }
+}
 
 // 0x00618140
 // Frame timing and input polling.
@@ -1472,8 +1565,27 @@ void sub_60dc10() {
         }
     }
 }
-void sub_614330(int height) {} // 0x614330
-void sub_60c150() {} // 0x60c150
+// Stubs for sub_614330 and sub_60c150
+void sub_614370(void* p1, void* p2, void* p3) {} // 0x614370 stub
+void sub_60c2e0() {} // 0x60c2e0 stub
+
+// 0x00614330
+// Initialization related to window height.
+void sub_614330(int height) {
+    // 0xeb612e: Calls internal init functions
+    sub_614370(g_hWnd, (void*)height, NULL);
+    sub_60c2e0();
+}
+void sub_688370(void* p1, int p2, int p3) {} // 0x688370 stub
+void sub_5090a0(void* p) {} // 0x5090a0 stub
+
+// 0x0060c150
+// Global state and object initialization.
+void sub_60c150() {
+    // 0xeb496e: Calls multiple initialization helpers
+    sub_688370(NULL, 4, 0); // Simplified
+    sub_5090a0((void*)0x862730);
+}
 
 // 0x0060deb0
 // Disables or restores accessibility shortcuts (Sticky Keys, Toggle Keys, Filter Keys)
