@@ -2,21 +2,16 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <float.h>
-
-// Internal functions used in WinMain (addresses in hp.exe)
-void sub_60deb0(int restore); // 0x60deb0
-void sub_617c60() {} // 0x617c60
-int sub_60ce60(const char* section, const char* key, const char* appName, int defaultValue) { return defaultValue; } // 0x60ce60
-bool sub_60da90() { return true; } // 0x60da90
-int sub_60db20(void* this_ptr, HINSTANCE hInstance, LPSTR lpCmdLine, int nShowCmd) { return 1; } // 0x60db20
-void sub_617bf0(const char* cmdLine, const char* key, int* outValue) {} // 0x617bf0
-void sub_60dc10() {} // 0x60dc10
-void sub_614330(int height) {} // 0x614330
-void sub_60c150() {} // 0x60c150
+#include <ctype.h>
 
 // Global variables (addresses in hp.exe)
 char g_lpCmdLine1[512]; // 0xc82b88
 char g_lpCmdLine2[512]; // 0xc82d88
+char* g_anonArgs[32]; // 0xc82f88
+char* g_argKeys[32]; // 0xc83008
+char* g_argValues[32]; // 0xc83088
+int g_anonArgCount = 0; // 0xc83108
+int g_argCount = 0; // 0xc8310c
 int g_width = 0; // 0xbf1940
 int g_height = 0; // 0xbf1944
 int g_bitDepth = 0; // 0xbf1948
@@ -36,6 +31,109 @@ float g_fUnknown_8ae1dc = 0.0f; // 0x8ae1dc
 STICKYKEYS g_stickyKeys; // 0x8afc44
 TOGGLEKEYS g_toggleKeys; // 0x8afc4c
 FILTERKEYS g_filterKeys; // 0x8afc54
+
+// Internal functions used in WinMain (addresses in hp.exe)
+void sub_60deb0(int restore); // 0x60deb0
+
+// 0x00617d70
+// Parses a single token from a string, handling quoted strings.
+// Updates the string pointer to the next token.
+char* sub_617d70(char** pStr) {
+    char* start = *pStr;
+    char c = *start;
+    char* current = start;
+
+    if (c == '"' || c == '\'') {
+        // 0x617daa: Handle quoted strings.
+        start++;
+        *pStr = start;
+        current = start;
+        if (*current != '\0') {
+            while (*current != '\0' && *current != c) {
+                current++;
+            }
+        }
+    } else {
+        // 0x617d80: Handle regular tokens.
+        if (c == '\0') return start;
+        while (*current != '\0' && !isspace((unsigned char)*current)) {
+            current++;
+        }
+    }
+
+    if (*current != '\0') {
+        // 0x617dce: Null-terminate the token and advance the pointer.
+        *current = '\0';
+        *pStr = current + 1;
+    } else {
+        *pStr = current;
+    }
+    return start;
+}
+
+// 0x00617c60
+// Parses the command line into global key-value arrays and anonymous arguments.
+void sub_617c60() {
+    char* esi = g_lpCmdLine1; // 0x60e022
+    while (true) {
+        // 0xeb788c: Skip leading whitespace.
+        while (*esi != '\0' && isspace((unsigned char)*esi)) {
+            esi++;
+        }
+
+        if (*esi == '\0') break;
+
+        if (*esi == '-') {
+            // 0xeb78b5: It's a keyed argument (e.g., -Width=800).
+            esi++;
+            char* key = esi;
+            char* value = NULL;
+
+            // 0xeb78cb: Search for the end of the key (space or '=').
+            while (*esi != '\0' && !isspace((unsigned char)*esi) && *esi != '=') {
+                esi++;
+            }
+
+            if (*esi == '=') {
+                // 0xeb78f1: Key-value pair found.
+                *esi = '\0';
+                esi++;
+                value = sub_617d70(&esi); // 0xeb790f
+            } else {
+                // 0xeb78f4: Only a key found.
+                if (*esi != '\0') {
+                    *esi = '\0';
+                    esi++;
+                }
+            }
+
+            if (g_argCount < 32) {
+                // 0xeb7925: Store the key and value.
+                g_argKeys[g_argCount] = key;
+                g_argValues[g_argCount] = value;
+                g_argCount++;
+            }
+        } else {
+            // 0xeb7942: It's an anonymous argument.
+            if (g_anonArgCount < 32) {
+                char* arg = sub_617d70(&esi); // 0xeb7953
+                g_anonArgs[g_anonArgCount] = arg;
+                g_anonArgCount++;
+            } else {
+                // Buffer full, skip the token.
+                sub_617d70(&esi);
+            }
+        }
+    }
+}
+
+int sub_60ce60(const char* section, const char* key, const char* appName, int defaultValue) { return defaultValue; } // 0x60ce60
+bool sub_60da90() { return true; } // 0x60da90
+int sub_60db20(void* this_ptr, HINSTANCE hInstance, LPSTR lpCmdLine, int nShowCmd) { return 1; } // 0x60db20
+void sub_617bf0(const char* cmdLine, const char* key, int* outValue) {} // 0x617bf0
+void sub_60dc10() {} // 0x60dc10
+void sub_614330(int height) {} // 0x614330
+void sub_60c150() {} // 0x60c150
 
 // 0x0060deb0
 // Disables or restores accessibility shortcuts (Sticky Keys, Toggle Keys, Filter Keys)
