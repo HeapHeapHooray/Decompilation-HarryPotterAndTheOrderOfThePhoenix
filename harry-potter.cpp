@@ -1006,6 +1006,7 @@ void* sub_79ea50(size_t size) {
 // Scans a list of strings for "bf:", modifies the path, and performs string manipulation.
 // WELL DEFINED FUNCTION, NOT A STUB
 void sub_611800() {
+/* TODO: NOT COMPLETE, DECOMPILE FURTHER LATER !*/
     if (g_dword_8afb30 <= 0) return;
 
     // 0xeb585e: Get global structure
