@@ -148,6 +148,18 @@ void* sub_6f7470(uint32_t field_C, int param); // 0x6f7470
 void* sub_6aaaa0(void* this_ptr, int param); // 0x6aaaa0
 void* sub_6a9330(void* this_ptr, int param); // 0x6a9330
 
+// Calling convention helpers
+#define REGPARM1 __attribute__((regparm(1)))
+#define REGPARM2 __attribute__((regparm(2)))
+#define REGPARM3 __attribute__((regparm(3)))
+
+extern "C" {
+    uint32_t REGPARM1 sub_40f2f0(const char* str); // 0x40f2f0
+    void* __fastcall sub_6a44d0(void* this_ptr, void* p2, int size); // 0x6a44d0
+    void* __thiscall sub_77a5d0(void* this_ptr, uint32_t hash); // 0x77a5d0
+    void __thiscall sub_77a5a0(void* this_ptr, void* entry); // 0x77a5a0
+}
+
 // 0x00617d70
 // Parses a single token from a string, handling quoted strings.
 // Updates the string pointer to the next token.
@@ -684,8 +696,61 @@ void* g_ptr_c7b924 = NULL; // 0xc7b924
 uint8_t g_array_c7ba4c[0x1B0] = {0}; // 0xc7ba4c (6 entries * 0x48 bytes)
 void* g_ptr_c7d038 = NULL; // 0xc7d038
 
-void sub_6a4510(void* p) {} // 0x6a4510 stub
-void sub_40f2f0(void* p) {} // 0x40f2f0 stub
+// 0x006a4510
+// Hashes a string and registers it in a table if it doesn't already exist.
+// Originally used EDI for 'this', so we use a wrapper or inline assembly.
+uint32_t sub_6a4510(const char* str) {
+    void* this_ptr;
+    __asm__("mov %%edi, %0" : "=r"(this_ptr));
+    
+    // 0x6a4518: Hash the input string
+    uint32_t hash = sub_40f2f0(str);
+    if (hash == 0) return 0;
+
+    // 0x6a4528: Check if registration is enabled and the table exists
+    if (*(uint8_t*)((uint8_t*)this_ptr + 0x44) != 0) {
+        void* table = *(void**)((uint8_t*)this_ptr + 0x40);
+        if (table != NULL) {
+            // 0x6a4536: Check if the hash is already registered
+            if (sub_77a5d0(table, hash) == NULL) {
+                // 0x6a4549: Allocate and initialize a new entry (size 0x28)
+                void* entry = sub_6a44d0(this_ptr, (void*)0x88c2f0, 0x28);
+                if (entry != NULL) {
+                    *(uint32_t*)entry = 0;
+                    *(uint32_t*)((uint8_t*)entry + 4) = hash;
+                    // 0x6a4568: Copy the string into the entry (max 30 chars)
+                    strncpy((char*)entry + 8, str, 30);
+                    // 0x6a4575: Add the new entry to the table
+                    sub_77a5a0(table, entry);
+                }
+            }
+        }
+    }
+    
+    return hash;
+}
+
+// Stubs for sub_6a4510 dependencies
+extern "C" {
+    void* __fastcall sub_6a44d0(void* this_ptr, void* p2, int size) { return NULL; } // 0x6a44d0 stub
+    void* __thiscall sub_77a5d0(void* this_ptr, uint32_t hash) { return NULL; } // 0x77a5d0 stub
+    void __thiscall sub_77a5a0(void* this_ptr, void* entry) {} // 0x77a5a0 stub
+}
+
+// 0x0040f2f0
+// Simple hash function for strings.
+uint32_t REGPARM1 sub_40f2f0(const char* str) {
+    if (!str) return 0;
+    uint32_t hash = 0x811c9dc5;
+    while (*str) {
+        uint8_t c = (uint8_t)*str;
+        if (c >= 'A' && c <= 'Z') c += 0x20; // tolower
+        hash = (hash ^ c) * 0x1000193;
+        str++;
+    }
+    return hash;
+}
+
 void sub_40efb0(void* p1, int p2) {} // 0x40efb0 stub
 
 // 0x0058b8a0
@@ -705,9 +770,9 @@ void sub_58b8a0() {
         } else {
             arg = (void*)0x84d1d8;
             if (*(void**)((uint8_t*)pObj + 4) != NULL) {
-                sub_6a4510(arg);
+                sub_6a4510((const char*)arg);
             } else {
-                sub_40f2f0(arg);
+                sub_40f2f0((const char*)arg);
             }
         }
         sub_40efb0(arg, 1000);
