@@ -859,7 +859,43 @@ uint32_t REGPARM1 sub_40f2f0(const char* str) {
     return hash;
 }
 
-void sub_40efb0(void* p1, int p2) {} // 0x40efb0 stub
+// 0x0040efb0
+// Navigates through a global object hierarchy to call a virtual function.
+// It starts from g_ptr_bf1a88, goes to offset 0x0c, then 0x04,
+// then checks offsets 0x48 and 0x2c for a target object.
+// If found, it calls the virtual function at vtable index 1.
+// WELL DEFINED FUNCTION, NOT A STUB
+void sub_40efb0(void* p1, int p2) {
+    // 0x40efb0: Get the root global object.
+    void* pObj = g_ptr_bf1a88;
+    if (!pObj) return;
+    
+    // 0x40efb9: Get sub-object at offset 0x0c.
+    void* pSub = *(void**)((uint8_t*)pObj + 0x0c);
+    if (!pSub) return;
+    
+    // 0x40efc0: Get sub-object at offset 0x04.
+    void* pSub2 = *(void**)((uint8_t*)pSub + 0x04);
+    if (!pSub2) return;
+    
+    // 0x40efc7: Check for target object at offset 0x48.
+    void* pTarget = *(void**)((uint8_t*)pSub2 + 0x48);
+    if (!pTarget) {
+        // 0x40efce: Fallback to target object at offset 0x2c.
+        pTarget = *(void**)((uint8_t*)pSub2 + 0x2c);
+    }
+    
+    if (pTarget) {
+        // 0x40efd5: Get the vtable and call the function at index 1 (offset 0x04).
+        void** vtable = *(void***)pTarget;
+        typedef void (__stdcall *VFunc)(void*, int);
+        VFunc func = (VFunc)vtable[1];
+        
+        // 0x40efe0: Perform the virtual call.
+        func(p1, p2);
+    }
+}
+
 
 // 0x0058b8a0
 // Game state manager / object cleanup function.
