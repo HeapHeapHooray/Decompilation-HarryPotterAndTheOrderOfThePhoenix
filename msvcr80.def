@@ -1,0 +1,7 @@
+LIBRARY msvcr80.dll
+EXPORTS
+    _lock
+    _unlock
+    __dllonexit
+    _encode_pointer
+    _decode_pointer

@@ -130,12 +130,12 @@ void sub_66f810(const char* format, ...); // 0x66f810
 void sub_79a712(int enable); // 0x79a712
 
 // CRT functions (from MSVCR80.dll)
-#define _encode_pointer EncodePointer
-#define _decode_pointer DecodePointer
-extern "C" void __cdecl _lock(int locknum) {}
-extern "C" void __cdecl _unlock(int locknum) {}
-extern "C" _onexit_t __cdecl __dllonexit(_onexit_t pFunc, void** pBegin, void** pEnd) {
-    return _onexit(pFunc);
+extern "C" {
+    __declspec(dllimport) void* msvc_encode_pointer(void* p) __asm__("__encode_pointer");
+    __declspec(dllimport) void* msvc_decode_pointer(void* p) __asm__("__decode_pointer");
+    __declspec(dllimport) void msvc_lock(int locknum) __asm__("__lock");
+    __declspec(dllimport) void msvc_unlock(int locknum) __asm__("__unlock");
+    __declspec(dllimport) _onexit_t msvc_dllonexit(_onexit_t pFunc, void** pBegin, void** pEnd) __asm__("___dllonexit");
 }
 
 // 0x00617d70
@@ -465,7 +465,7 @@ void* sub_612f00() {
 // It manages a dynamic table of function pointers, using encoding for security.
 void* sub_6f5338(void* pFunc) {
     // 0x6f5344: Decode the start of the onexit table.
-    void* begin = _decode_pointer((void*)g_onexit_begin);
+    void* begin = msvc_decode_pointer((void*)g_onexit_begin);
     
     // 0x6f5356: If the table hasn't been initialized (encoded -1), use the standard _onexit.
     if (begin == (void*)-1) {
@@ -473,22 +473,22 @@ void* sub_6f5338(void* pFunc) {
     }
     
     // 0x6f5367: Lock the onexit table (lock number 8).
-    _lock(8);
+    msvc_lock(8);
     
     // 0x6f5373: Re-decode begin and end pointers after locking.
-    begin = _decode_pointer((void*)g_onexit_begin);
-    void* end = _decode_pointer((void*)g_onexit_end);
+    begin = msvc_decode_pointer((void*)g_onexit_begin);
+    void* end = msvc_decode_pointer((void*)g_onexit_end);
     
     // 0x6f5394: Register the function in the table.
     // __dllonexit will reallocate the table if necessary.
-    void* result = (void*)__dllonexit((_onexit_t)pFunc, (void**)&begin, (void**)&end);
+    void* result = (void*)msvc_dllonexit((_onexit_t)pFunc, (void**)&begin, (void**)&end);
     
     // 0x6f53a7: Re-encode and store the updated table pointers.
-    g_onexit_begin = (uint32_t)_encode_pointer(begin);
-    g_onexit_end = (uint32_t)_encode_pointer(end);
+    g_onexit_begin = (uint32_t)msvc_encode_pointer(begin);
+    g_onexit_end = (uint32_t)msvc_encode_pointer(end);
     
     // 0x6f53d0: Unlock the table.
-    _unlock(8);
+    msvc_unlock(8);
     
     return result;
 }
