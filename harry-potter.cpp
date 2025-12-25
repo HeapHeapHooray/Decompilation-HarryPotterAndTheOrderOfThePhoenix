@@ -90,6 +90,7 @@ void* g_ptr_bef728 = NULL; // 0xbef728
 uint32_t g_onexit_begin = 0xFFFFFFFF; // 0xe76060
 uint32_t g_onexit_end = 0xFFFFFFFF;   // 0xe7605c
 uint8_t g_byte_8da939 = 0; // 0x8da939
+HANDLE g_hMutex_8daaac = NULL; // 0x8daaac
 
 struct Struct_E6E870 {
     void* vtable; // 0xe6e870
@@ -783,18 +784,29 @@ void sub_6108c0() {} // 0x6108c0 stub
 void sub_6ac930() {} // 0x6ac930 stub
 
 // 0x006f63f1
-// Internal lock wrapper.
+// Internal lock wrapper using a global mutex.
 void sub_6f63f1() {
-    // 0x6f63f1: Call EnterCriticalSection wrapper at 0x896dfc
-    // For now, we stub the actual OS call but maintain the flag logic.
+    // 0x6f63f1: Call EnterCriticalSection wrapper (actually WaitForSingleObject on a mutex).
+    // 0x6f9fcd: push INFINITE, push g_hMutex_8daaac, call WaitForSingleObject.
+    if (g_hMutex_8daaac != NULL) {
+        WaitForSingleObject(g_hMutex_8daaac, INFINITE);
+    }
+    
+    // 0x6f63f7: Increment recursion counter.
     g_byte_8da939++;
 }
 
 // 0x006f63ff
-// Internal unlock wrapper.
+// Internal unlock wrapper using a global mutex.
 void sub_6f63ff() {
-    // 0x6f63ff: Call LeaveCriticalSection wrapper at 0x896e00
+    // 0x6f63ff: Decrement recursion counter.
     g_byte_8da939--;
+    
+    // 0x6f6406: Jump to LeaveCriticalSection wrapper (actually ReleaseMutex).
+    // 0x6f9fdc: push g_hMutex_8daaac, call ReleaseMutex.
+    if (g_hMutex_8daaac != NULL) {
+        ReleaseMutex(g_hMutex_8daaac);
+    }
 }
 
 // Stubs for functions called by sub_6aaaa0 and sub_6a9330
