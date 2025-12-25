@@ -5,4 +5,5 @@
 5. If there is a dangling declaration of the function remove it, only the newly added definition is needed.
 6. Comment "WELL DEFINED FUNCTION, NOT A STUB" to functions you have implemented right now that are not a stub.
 7. Compile harry-potter.cpp to Microsoft Windows (GUI subsystem) targeting the Intel 80386 (x86) architecture, it must be called harry.potter.exe. (use "make")
-8. Commit all changes as "Implemented {FUNCTION_NAME_HERE}".
+8. Count how many times the comment "WELL DEFINED FUNCTION, NOT A STUB" appears in harry-potter.cpp, and update README.md with that as the current number of decompiled functions.
+9. Commit all changes as "Implemented {FUNCTION_NAME_HERE}".
