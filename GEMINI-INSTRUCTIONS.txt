@@ -1,6 +1,6 @@
 1. List all function declarations in harry-potter.cpp that do not have a definition, or the definition is just a stub.
 2. Pick the first of those and get it's address in hp.exe (it's in the comment).
-3. Decompile that function in the previous address mentioned, the address refers to hp.exe (decompile it in c++).
+3. Decompile that function in the previous address mentioned, the address refers to hp.exe (decompile it in c++, use Ghidra if needed).
 4. Add the decompiled function definition to harry-potter.cpp, if it has any function call that is not in harry-potter.cpp add it's declaration with the commented address somewhere, make sure everything including the function have their respective address in hp.exe clearly commented. Also comment all the code explaining what it does.
 5. If there is a dangling declaration of the function remove it, only the newly added definition is needed.
 6. Comment "WELL DEFINED FUNCTION, NOT A STUB" to functions you have implemented right now that are not a stub.
