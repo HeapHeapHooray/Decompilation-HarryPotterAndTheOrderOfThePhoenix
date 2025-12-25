@@ -158,6 +158,10 @@ extern "C" {
     void* __fastcall sub_6a44d0(void* this_ptr, void* p2, int size); // 0x6a44d0
     void* __thiscall sub_77a5d0(void* this_ptr, uint32_t hash); // 0x77a5d0
     void __thiscall sub_77a5a0(void* this_ptr, void* entry); // 0x77a5a0
+    void* __thiscall sub_77a670(void* this_ptr); // 0x77a670
+    void __thiscall sub_77a680(void* this_ptr, void* entry); // 0x77a680
+    void __thiscall sub_77a740(void* this_ptr, void* entry); // 0x77a740
+    void __thiscall sub_77a720(void* this_ptr, void* entry); // 0x77a720
 }
 
 // 0x00617d70
@@ -730,11 +734,73 @@ uint32_t sub_6a4510(const char* str) {
     return hash;
 }
 
-// Stubs for sub_6a4510 dependencies
-extern "C" {
-    void* __fastcall sub_6a44d0(void* this_ptr, void* p2, int size) { return NULL; } // 0x6a44d0 stub
-    void* __thiscall sub_77a5d0(void* this_ptr, uint32_t hash) { return NULL; } // 0x77a5d0 stub
-    void __thiscall sub_77a5a0(void* this_ptr, void* entry) {} // 0x77a5a0 stub
+// 0x006a44d0
+// Allocator wrapper that calls a virtual function on an internal allocator object.
+void* __fastcall sub_6a44d0(void* this_ptr, void* p2, int size) {
+    void* allocator = *(void**)((uint8_t*)this_ptr + 0x34);
+    if (!allocator) return NULL;
+    
+    struct {
+        void* p;
+        int val;
+        int zero;
+    } args;
+    args.p = p2;
+    args.val = 1;
+    args.zero = 0;
+    
+    // 0x6a44f5: Call virtual function at offset 0
+    typedef void* (__thiscall *AllocFunc)(void*, void*, int);
+    AllocFunc vfunc = (*(AllocFunc**)allocator)[0];
+    return vfunc(allocator, &args, size);
+}
+
+// 0x0077a5d0
+// Searches a linked list for an entry with a matching hash.
+void* __thiscall sub_77a5d0(void* this_ptr, uint32_t hash) {
+    void* current = sub_77a670(this_ptr);
+    while (current != NULL) {
+        if (*(uint32_t*)((uint8_t*)current + 4) == hash) {
+            return (uint8_t*)current + 8;
+        }
+        current = sub_77a670(current);
+    }
+    return NULL;
+}
+
+// 0x0077a5a0
+// Adds an entry to the table if it doesn't already exist.
+void __thiscall sub_77a5a0(void* this_ptr, void* entry) {
+    uint32_t hash = *(uint32_t*)((uint8_t*)entry + 4);
+    if (sub_77a5d0(this_ptr, hash) == NULL) {
+        sub_77a680(this_ptr, entry);
+    }
+}
+
+// 0x0077a670
+// Returns the next pointer (at offset 0).
+void* __thiscall sub_77a670(void* this_ptr) {
+    return *(void**)this_ptr;
+}
+
+// 0x0077a680
+// Adds an entry to the linked list.
+void __thiscall sub_77a680(void* this_ptr, void* entry) {
+    sub_77a740(this_ptr, entry);
+}
+
+// 0x0077a740
+// Inserts an entry at the head of the linked list.
+void __thiscall sub_77a740(void* this_ptr, void* entry) {
+    void* old_head = *(void**)this_ptr;
+    sub_77a720(entry, old_head);
+    *(void**)this_ptr = entry;
+}
+
+// 0x0077a720
+// Sets the next pointer of an entry.
+void __thiscall sub_77a720(void* this_ptr, void* entry) {
+    *(void**)this_ptr = entry;
 }
 
 // 0x0040f2f0
