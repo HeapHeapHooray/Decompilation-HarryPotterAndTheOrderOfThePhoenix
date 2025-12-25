@@ -804,16 +804,33 @@ void __thiscall sub_77a720(void* this_ptr, void* entry) {
 }
 
 // 0x0040f2f0
-// Simple hash function for strings.
+// Case-insensitive FNV-1 (Fowler-Noll-Vo) 32-bit hash function.
+// FNV-1 algorithm: hash = (hash * FNV_prime) ^ byte
+// This version converts uppercase characters to lowercase before hashing.
 uint32_t REGPARM1 sub_40f2f0(const char* str) {
     if (!str) return 0;
+    
+    // 0x40f2fd: FNV offset basis for 32-bit (0x811c9dc5)
     uint32_t hash = 0x811c9dc5;
+    
     while (*str) {
         uint8_t c = (uint8_t)*str;
-        if (c >= 'A' && c <= 'Z') c += 0x20; // tolower
-        hash = (hash ^ c) * 0x1000193;
+        
+        // 0x40f306 - 0x40f30e: Case-insensitive conversion (tolower)
+        // If character is between 'A' (0x41) and 'Z' (0x5A), add 0x20 to make it lowercase.
+        if (c >= 'A' && c <= 'Z') {
+            c += 0x20;
+        }
+        
+        // 0x40f311: Multiply by FNV prime for 32-bit (0x1000193)
+        hash = hash * 0x1000193;
+        
+        // 0x40f31d: XOR with the current byte
+        hash = hash ^ c;
+        
         str++;
     }
+    
     return hash;
 }
 
