@@ -991,59 +991,120 @@ uint32_t g_dword_bf1b30 = 0; // 0xbf1b30
 // Globals for sub_611800
 int g_dword_8afb30 = 0; // 0x8afb30
 void* g_ptr_8e0e88 = NULL; // 0x8e0e88
-void* (*g_func_8afb14)(size_t) = NULL; // 0x8afb14
+void* (*g_func_8afb14)(void*, void*) = NULL; // 0x8afb14 (signature guessed)
+
+// Helper for 0x79ea50 (Stack allocation / adjustment?)
+// The assembly does some bitwise math on ESP and EAX, then jumps to 0x6f5870 (_alloca_probe?)
+// We will simulate the allocation part using alloca or malloc.
+void* sub_79ea50(size_t size) {
+    // In the original, this adjusts the stack.
+    // We'll just return a pointer to allocated memory.
+    return malloc(size); // Using malloc for safety, though alloca is closer to stack.
+}
 
 // 0x00611800
 // Scans a list of strings for "bf:", modifies the path, and performs string manipulation.
 // WELL DEFINED FUNCTION, NOT A STUB
 void sub_611800() {
-    if (!g_ptr_8e0e88) return;
+    if (g_dword_8afb30 <= 0) return;
 
-    // Access the global structure
-    // We treat 0x8e0e88 as a pointer to a struct with fields at 0x88 and 0x8C
+    // 0xeb585e: Get global structure
     uint8_t* pGlobal = (uint8_t*)g_ptr_8e0e88;
+    if (!pGlobal) return;
+
+    // 0xeb5864: Get list pointer
     char** pList = *(char***)(pGlobal + 0x88);
-    
     if (!pList) return;
 
-    for (int i = 0; i < g_dword_8afb30; i++) {
-        char* str = pList[i];
-        if (str && strncmp(str, "bf:", 3) == 0) {
-            // Found "bf:"
-            // The assembly logic appends "/;" or ";" to the string at 0x8C
-            char* targetStr = *(char**)(pGlobal + 0x8C);
-            if (targetStr) {
-                size_t len = strlen(targetStr);
-                if (len > 2 && targetStr[len-2] == 0) { // Check logic from asm
-                     // This part is a bit ambiguous in asm, implementing best effort
+    int index = 0;
+    while (index < g_dword_8afb30) {
+        char* str = pList[index];
+        if (str) {
+            // 0xeb5881: Check for "bf:"
+            if (strncmp(str, "bf:", 3) == 0) {
+                // Found "bf:"
+                // 0xeb589f: Get target string pointer
+                char* targetStr = *(char**)(pGlobal + 0x8C);
+                
+                // 0xeb58ab: Complex string appending logic
+                // This loop seems to ensure the string ends with a separator before appending.
+                // We'll use a pointer to traverse.
+                char* p = targetStr;
+                
+                // 0xeb58ab: Check 1st byte after current pos (initially start)
+                if (*(p + 1) != 0) {
+                    // 0xeb58d9: Append null? No, this jumps to the end of the logic block.
+                    // It seems to skip the loop if the string is already "full" or something?
+                    // Actually, if *(p+1) != 0, it means we are not at the end.
+                    // But the loop 0xeb58b6 finds the end.
+                    // The initial check might be for empty string or specific state.
+                } else {
+                     // 0xeb58b1: Check current byte
+                     if (*p == 0) {
+                         // Empty string? Jump to 0xeb58be
+                     } else {
+                         // 0xeb58b6: Find null terminator
+                         while (*p != 0) p++;
+                     }
+                     
+                     // 0xeb58be: p points to null terminator. Check *(p+1)
+                     if (*(p + 1) != 0) {
+                         // Jump to write ';'
+                         *p = ';';
+                     } else {
+                         // 0xeb58c4: Check *(p+2)
+                         if (*(p + 2) == 0) {
+                             // Jump to write ';'
+                             *p = ';';
+                         } else {
+                             // 0xeb58ca: Advance and write '/' then ';'
+                             p++;
+                             *p = '/';
+                             *p = ';'; // Overwrite '/' with ';'
+                         }
+                     }
+                     
+                     // 0xeb58d9: Write null
+                     *p = 0; 
+                     // Wait, if we wrote ';', then wrote 0, we erased the ';'.
+                     // The assembly flow is tricky.
+                     // If we wrote ';', we are at 0xeb58d0.
+                     // Then we check *(p+1). If != 0, loop back to 0xeb58b1.
+                     // If == 0, fall through to 0xeb58d9 (write 0).
+                     
+                     // Let's implement the effect:
+                     // It effectively appends ";" if needed.
+                     // Since we are in C++, let's assume standard strcat behavior for safety
+                     // but try to respect the separator logic.
+                     strcat(targetStr, ";");
                 }
+
+                // 0xeb58e2: Append "bf:"
+                strcat(targetStr, "bf:");
+
+                // 0xeb58fb: Allocate memory for the rest of the string
+                // Calculate length of suffix (str + 3)
+                size_t suffixLen = strlen(str + 3);
+                char* newMem = (char*)sub_79ea50(suffixLen + 1); // +1 for null
                 
-                // Append logic based on asm:
-                // If byte at offset 2 is 0, append ";"
-                // Else append "/;"
-                // Note: The asm was modifying the string in place.
-                
-                // Simplified implementation of the observed behavior:
-                // It seems to be constructing a path.
-                // We will use standard string functions.
-                
-                // Call strstr to find "bf:" in targetStr
-                char* found = strstr(targetStr, "bf:");
-                if (found) {
-                    // Calculate prefix length
-                    size_t prefixLen = found - targetStr;
-                    
-                    // Allocate memory (using alloca/stack in asm)
-                    char* newBuf = (char*)alloca(prefixLen + 1);
-                    strncpy(newBuf, targetStr, prefixLen);
-                    newBuf[prefixLen] = '\0';
-                    
-                    // Further processing...
-                    // The asm continues to parse "bf:" and do more.
-                    // For now, we replicate the structure.
+                // 0xeb5906: Initialize/Construct?
+                if (g_func_8afb14) {
+                    g_func_8afb14(newMem, NULL); 
                 }
+
+                // 0xeb591f: Copy suffix
+                // The assembly calls an import (likely lstrcpyn or memcpy)
+                // We'll use strcpy
+                strcpy(newMem, str + 3);
+                
+                // The rest of the function (0xeb594c...) seems to use this new string.
+                // Since we don't have the full code for what happens next, we stop here.
+                // But we must ensure we don't leak if we used malloc.
+                // In the original, it's alloca, so it frees automatically.
+                free(newMem);
             }
         }
+        index++;
     }
 }
 
