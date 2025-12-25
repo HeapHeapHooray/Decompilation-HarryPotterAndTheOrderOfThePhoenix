@@ -87,6 +87,8 @@ uint8_t g_byte_e6b388 = 0; // 0xe6b388
 void* g_dword_bef7c0 = NULL; // 0xbef7c0
 void* g_dword_bef768 = NULL; // 0xbef768
 void* g_ptr_bef728 = NULL; // 0xbef728
+uint32_t g_onexit_begin = 0xFFFFFFFF; // 0xe76060
+uint32_t g_onexit_end = 0xFFFFFFFF;   // 0xe7605c
 
 struct Struct_E6E870 {
     void* vtable; // 0xe6e870
@@ -126,6 +128,15 @@ extern "C" void sub_617b60(void* p); // 0x617b60
 extern "C" bool sub_68dac0(); // 0x68dac0
 void sub_66f810(const char* format, ...); // 0x66f810
 void sub_79a712(int enable); // 0x79a712
+
+// CRT functions (from MSVCR80.dll)
+#define _encode_pointer EncodePointer
+#define _decode_pointer DecodePointer
+extern "C" void __cdecl _lock(int locknum) {}
+extern "C" void __cdecl _unlock(int locknum) {}
+extern "C" _onexit_t __cdecl __dllonexit(_onexit_t pFunc, void** pBegin, void** pEnd) {
+    return _onexit(pFunc);
+}
 
 // 0x00617d70
 // Parses a single token from a string, handling quoted strings.
@@ -450,8 +461,37 @@ void* sub_612f00() {
     return &g_struct_e6e870;
 }
 // 0x006f5338
-// Internal CRT function used by atexit (likely _onexit).
-void* sub_6f5338(void* pFunc) { return NULL; } // stub
+// Internal CRT function used to register a function to be called at exit.
+// It manages a dynamic table of function pointers, using encoding for security.
+void* sub_6f5338(void* pFunc) {
+    // 0x6f5344: Decode the start of the onexit table.
+    void* begin = _decode_pointer((void*)g_onexit_begin);
+    
+    // 0x6f5356: If the table hasn't been initialized (encoded -1), use the standard _onexit.
+    if (begin == (void*)-1) {
+        return (void*)_onexit((_onexit_t)pFunc); // 0x6f535e
+    }
+    
+    // 0x6f5367: Lock the onexit table (lock number 8).
+    _lock(8);
+    
+    // 0x6f5373: Re-decode begin and end pointers after locking.
+    begin = _decode_pointer((void*)g_onexit_begin);
+    void* end = _decode_pointer((void*)g_onexit_end);
+    
+    // 0x6f5394: Register the function in the table.
+    // __dllonexit will reallocate the table if necessary.
+    void* result = (void*)__dllonexit((_onexit_t)pFunc, (void**)&begin, (void**)&end);
+    
+    // 0x6f53a7: Re-encode and store the updated table pointers.
+    g_onexit_begin = (uint32_t)_encode_pointer(begin);
+    g_onexit_end = (uint32_t)_encode_pointer(end);
+    
+    // 0x6f53d0: Unlock the table.
+    _unlock(8);
+    
+    return result;
+}
 
 // 0x006f53d7
 // Registers a function to be called at program termination (atexit).
