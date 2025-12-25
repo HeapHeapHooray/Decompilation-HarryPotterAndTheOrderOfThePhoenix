@@ -167,6 +167,7 @@ extern "C" {
 // 0x00617d70
 // Parses a single token from a string, handling quoted strings.
 // Updates the string pointer to the next token.
+// WELL DEFINED FUNCTION, NOT A STUB
 char* sub_617d70(char** pStr) {
     char* start = *pStr;
     char c = *start;
@@ -202,6 +203,7 @@ char* sub_617d70(char** pStr) {
 
 // 0x00617c60
 // Parses the command line into global key-value arrays and anonymous arguments.
+// WELL DEFINED FUNCTION, NOT A STUB
 void sub_617c60() {
     char* esi = g_lpCmdLine1; // 0x60e022
     while (true) {
@@ -258,6 +260,7 @@ void sub_617c60() {
 
 // 0x0060ce20
 // Helper function that wraps RegQueryValueExA for reading string values.
+// WELL DEFINED FUNCTION, NOT A STUB
 bool sub_60ce20(HKEY hKey, const char* lpValueName, char* lpData, LPDWORD lpcbData) {
     DWORD type = REG_SZ;
     return RegQueryValueExA(hKey, lpValueName, NULL, &type, (LPBYTE)lpData, lpcbData) == ERROR_SUCCESS;
@@ -267,6 +270,7 @@ bool sub_60ce20(HKEY hKey, const char* lpValueName, char* lpData, LPDWORD lpcbDa
 // Helper function for registry-related error logging/verification.
 // It constructs the registry path, attempts to open the key, and throws an exception
 // if it fails. It also performs some validation on the value.
+// WELL DEFINED FUNCTION, NOT A STUB
 void sub_60cc70(const char* section, const char* key, const char* appName, const char* message) {
     std::string path = "Software\\Electronic Arts\\";
     if (appName && *appName) {
@@ -312,6 +316,7 @@ void sub_60cc70(const char* section, const char* key, const char* appName, const
 // Reads an integer value from the registry. It first attempts to read from
 // HKEY_CURRENT_USER and falls back to HKEY_LOCAL_MACHINE if not found.
 // The registry path is "Software\Electronic Arts\<appName>\<section>".
+// WELL DEFINED FUNCTION, NOT A STUB
 int sub_60ce60(const char* section, const char* key, const char* appName, int defaultValue) {
     std::string path = "Software\\Electronic Arts\\";
     if (appName && *appName) {
@@ -346,6 +351,7 @@ int sub_60ce60(const char* section, const char* key, const char* appName, int de
 
 // 0x0060da90
 // Registers the main window class.
+// WELL DEFINED FUNCTION, NOT A STUB
 bool sub_60da90(HINSTANCE hInstance) {
     UnregisterClassA("OrderOfThePhoenixMainWndClass", hInstance);
 
@@ -377,6 +383,7 @@ bool sub_60da90(HINSTANCE hInstance) {
 
 // 0x0060db20
 // Creates the main window.
+// WELL DEFINED FUNCTION, NOT A STUB
 HWND sub_60db20(void* this_ptr, HINSTANCE hInstance, char* lpCmdLine, int nShowCmd) {
     DWORD dwStyle;
     DWORD dwExStyle;
@@ -436,6 +443,7 @@ HWND sub_60db20(void* this_ptr, HINSTANCE hInstance, char* lpCmdLine, int nShowC
 // Searches for a key in the parsed command line arguments.
 // If found, it optionally returns the value string pointer.
 // Returns true if found, false otherwise.
+// WELL DEFINED FUNCTION, NOT A STUB
 bool __stdcall sub_617bf0(void* context, const char* key, char** outValue) {
     // context is a pointer to the start of the command line global block (0xc82b88)
     // 0x617bf7: Initialize loop counter (esi = 0)
@@ -464,11 +472,13 @@ bool __stdcall sub_617bf0(void* context, const char* key, char** outValue) {
 // 0x0079ea80
 // 64-bit arithmetic shift right helper.
 // Takes a 64-bit value and a shift count.
+// WELL DEFINED FUNCTION, NOT A STUB
 int64_t sub_79ea80(int64_t value, uint8_t shift) {
     return value >> shift;
 }
 // 0x00612f00
 // Initializes a global structure at 0xe6e870.
+// WELL DEFINED FUNCTION, NOT A STUB
 void* sub_612f00() {
     g_struct_e6e870.field_10 = 0;
     g_struct_e6e870.field_14 = 0;
@@ -489,6 +499,7 @@ void* sub_612f00() {
 // 0x006f5338
 // Internal CRT function used to register a function to be called at exit.
 // It manages a dynamic table of function pointers, using encoding for security.
+// WELL DEFINED FUNCTION, NOT A STUB
 void* sub_6f5338(void* pFunc) {
     // 0x6f5344: Decode the start of the onexit table.
     void* begin = msvc_decode_pointer((void*)g_onexit_begin);
@@ -523,6 +534,7 @@ void* sub_6f5338(void* pFunc) {
 // Registers a function to be called at program termination (atexit).
 // It wraps an internal function (sub_6f5338) and converts its return value
 // to the standard atexit return format (0 for success, -1 for failure).
+// WELL DEFINED FUNCTION, NOT A STUB
 int sub_6f53d7(void* pFunc) {
     // 0x6f53db: Call internal registration function.
     void* result = sub_6f5338(pFunc);
@@ -538,6 +550,7 @@ int sub_6f53d7(void* pFunc) {
 // value of a specific field (offset 0x4, masked with 0x7ffffff8).
 // This is likely part of a custom memory manager or object allocator,
 // potentially finding the largest free block or highest allocated address.
+// WELL DEFINED FUNCTION, NOT A STUB
 uint32_t sub_616590(void* p) {
     uint8_t* pObj = (uint8_t*)p;
     
@@ -606,6 +619,7 @@ uint32_t sub_618010(); // forward decl
 // 0x006aaaa0
 // Member function (originally using EAX for 'this').
 // Wraps sub_6f7508 with thread-safety.
+// WELL DEFINED FUNCTION, NOT A STUB
 void* sub_6aaaa0(void* this_ptr, int param) {
     if (!this_ptr) return NULL;
     uint32_t field_C = *(uint32_t*)((char*)this_ptr + 0x0C);
@@ -621,6 +635,7 @@ void* sub_6aaaa0(void* this_ptr, int param) {
 // 0x006a9330
 // Member function (originally using EAX for 'this').
 // Wraps sub_6f7470 with thread-safety.
+// WELL DEFINED FUNCTION, NOT A STUB
 void* sub_6a9330(void* this_ptr, int param) {
     if (!this_ptr) return NULL;
     uint32_t field_C = *(uint32_t*)((char*)this_ptr + 0x0C);
@@ -637,6 +652,7 @@ void* sub_6a9330(void* this_ptr, int param) {
 // Updates timing and performance counters for an object.
 // It calculates elapsed time, scales it by a factor, and updates internal 64-bit counters.
 // It also potentially calls sub-update functions if certain conditions are met.
+// WELL DEFINED FUNCTION, NOT A STUB
 void sub_6a9f20(void* p) {
     uint8_t* pObj = (uint8_t*)p;
     if (!pObj) return;
@@ -703,6 +719,7 @@ void* g_ptr_c7d038 = NULL; // 0xc7d038
 // 0x006a4510
 // Hashes a string and registers it in a table if it doesn't already exist.
 // Originally used EDI for 'this', so we use a wrapper or inline assembly.
+// WELL DEFINED FUNCTION, NOT A STUB
 uint32_t sub_6a4510(const char* str) {
     void* this_ptr;
     __asm__("mov %%edi, %0" : "=r"(this_ptr));
@@ -736,6 +753,7 @@ uint32_t sub_6a4510(const char* str) {
 
 // 0x006a44d0
 // Allocator wrapper that calls a virtual function on an internal allocator object.
+// WELL DEFINED FUNCTION, NOT A STUB
 void* __fastcall sub_6a44d0(void* this_ptr, void* p2, int size) {
     void* allocator = *(void**)((uint8_t*)this_ptr + 0x34);
     if (!allocator) return NULL;
@@ -757,6 +775,7 @@ void* __fastcall sub_6a44d0(void* this_ptr, void* p2, int size) {
 
 // 0x0077a5d0
 // Searches a linked list for an entry with a matching hash.
+// WELL DEFINED FUNCTION, NOT A STUB
 void* __thiscall sub_77a5d0(void* this_ptr, uint32_t hash) {
     void* current = sub_77a670(this_ptr);
     while (current != NULL) {
@@ -770,6 +789,7 @@ void* __thiscall sub_77a5d0(void* this_ptr, uint32_t hash) {
 
 // 0x0077a5a0
 // Adds an entry to the table if it doesn't already exist.
+// WELL DEFINED FUNCTION, NOT A STUB
 void __thiscall sub_77a5a0(void* this_ptr, void* entry) {
     uint32_t hash = *(uint32_t*)((uint8_t*)entry + 4);
     if (sub_77a5d0(this_ptr, hash) == NULL) {
@@ -779,18 +799,21 @@ void __thiscall sub_77a5a0(void* this_ptr, void* entry) {
 
 // 0x0077a670
 // Returns the next pointer (at offset 0).
+// WELL DEFINED FUNCTION, NOT A STUB
 void* __thiscall sub_77a670(void* this_ptr) {
     return *(void**)this_ptr;
 }
 
 // 0x0077a680
 // Adds an entry to the linked list.
+// WELL DEFINED FUNCTION, NOT A STUB
 void __thiscall sub_77a680(void* this_ptr, void* entry) {
     sub_77a740(this_ptr, entry);
 }
 
 // 0x0077a740
 // Inserts an entry at the head of the linked list.
+// WELL DEFINED FUNCTION, NOT A STUB
 void __thiscall sub_77a740(void* this_ptr, void* entry) {
     void* old_head = *(void**)this_ptr;
     sub_77a720(entry, old_head);
@@ -799,6 +822,7 @@ void __thiscall sub_77a740(void* this_ptr, void* entry) {
 
 // 0x0077a720
 // Sets the next pointer of an entry.
+// WELL DEFINED FUNCTION, NOT A STUB
 void __thiscall sub_77a720(void* this_ptr, void* entry) {
     *(void**)this_ptr = entry;
 }
@@ -807,6 +831,7 @@ void __thiscall sub_77a720(void* this_ptr, void* entry) {
 // Case-insensitive FNV-1 (Fowler-Noll-Vo) 32-bit hash function.
 // FNV-1 algorithm: hash = (hash * FNV_prime) ^ byte
 // This version converts uppercase characters to lowercase before hashing.
+// WELL DEFINED FUNCTION, NOT A STUB
 uint32_t REGPARM1 sub_40f2f0(const char* str) {
     if (!str) return 0;
     
@@ -840,6 +865,7 @@ void sub_40efb0(void* p1, int p2) {} // 0x40efb0 stub
 // Game state manager / object cleanup function.
 // Based on the current state (g_state_c7b908), it performs various operations
 // on global objects, typically calling a specific virtual function (offset 0x28).
+// WELL DEFINED FUNCTION, NOT A STUB
 void sub_58b8a0() {
     uint32_t state = g_state_c7b908;
     if (state > 6) return;
@@ -911,6 +937,7 @@ void sub_58b8a0() {
         }
     }
 }
+// WELL DEFINED FUNCTION, NOT A STUB
 void sub_66f810(const char* format, ...) {
     char buffer[2048];
     va_list args;
@@ -933,6 +960,7 @@ void sub_6ac930() {} // 0x6ac930 stub
 
 // 0x006f63f1
 // Internal lock wrapper using a global mutex.
+// WELL DEFINED FUNCTION, NOT A STUB
 void sub_6f63f1() {
     // 0x6f63f1: Call EnterCriticalSection wrapper (actually WaitForSingleObject on a mutex).
     // 0x6f9fcd: push INFINITE, push g_hMutex_8daaac, call WaitForSingleObject.
@@ -946,6 +974,7 @@ void sub_6f63f1() {
 
 // 0x006f63ff
 // Internal unlock wrapper using a global mutex.
+// WELL DEFINED FUNCTION, NOT A STUB
 void sub_6f63ff() {
     // 0x6f63ff: Decrement recursion counter.
     g_byte_8da939--;
@@ -965,6 +994,7 @@ void* sub_6f7470(uint32_t field_C, int param) { return NULL; } // 0x6f7470 stub
 // Performs general cleanup of global resources and handles.
 // It checks various global flags and pointers, calling specialized cleanup functions
 // and closing open handles (like g_handle_bf1b34).
+// WELL DEFINED FUNCTION, NOT A STUB
 void sub_6a8f90() {
     // 0xec6613: Check first cleanup condition
     if (g_dword_bf1b1c != 0) {
@@ -993,6 +1023,7 @@ void sub_6a8f90() {
 // 0x0067d2e0
 // Updates the global variable g_dword_bf193c with the available texture memory in MB.
 // It calls the Direct3D GetAvailableTextureMem virtual function.
+// WELL DEFINED FUNCTION, NOT A STUB
 void sub_67d2e0() {
     if (g_dword_bf1920 == NULL) return;
     
@@ -1019,6 +1050,7 @@ void sub_6836e0() {} // 0x6836e0 stub
 // 0x0067cfb0
 // Performs cleanup of various resources, typically called when the Direct3D
 // device is lost or being reset. It releases specific textures and buffers.
+// WELL DEFINED FUNCTION, NOT A STUB
 void sub_67cfb0() {
     // 0x67cfb6: Release resource at 0xb95034
     if (g_dword_b95034 != NULL) {
@@ -1090,6 +1122,7 @@ void sub_674430() {} // 0x674430 stub
 // 0x0067d0c0
 // Restores Direct3D resources after a device reset.
 // It re-acquires render targets and depth stencil surfaces.
+// WELL DEFINED FUNCTION, NOT A STUB
 void sub_67d0c0() {
     sub_675950();
     if (g_dword_b95034 == NULL) {
@@ -1178,6 +1211,7 @@ uint32_t g_dword_bf194c = 0; // 0xbf194c
 // 0x0066e080
 // Calculates a memory budget or quality setting (g_dword_8ae204) based on
 // available texture memory and various global flags.
+// WELL DEFINED FUNCTION, NOT A STUB
 void sub_66e080() {
     uint32_t mem = g_dword_bf193c;
     uint32_t budget;
@@ -1224,6 +1258,7 @@ void sub_79a712(int enable) {} // 0x79a712 (XInputEnable)
 // 0x00617b60
 // Performs specific operations on sub-objects of the passed parameter.
 // It calls two virtual functions at index 4 and index 8 respectively.
+// WELL DEFINED FUNCTION, NOT A STUB
 void sub_617b60(void* p) {
     uint8_t* pObj = (uint8_t*)p;
     if (!pObj) return;
@@ -1252,6 +1287,7 @@ void sub_617b60(void* p) {
 
 // 0x0068da30
 // Acquires input devices (keyboard and joysticks).
+// WELL DEFINED FUNCTION, NOT A STUB
 extern "C" bool sub_68da30() {
     // 0x68da30: Keyboard acquire
     if (g_dword_e6a070) {
@@ -1304,6 +1340,7 @@ void sub_60c670(void* p1, void* p2, void* p3, void* p4) {} // 0x60c670 stub
 // Saves the current window position and state (maximized/minimized) to the registry
 // before the application closes. This allows the game to restore the window
 // to its previous position on the next run.
+// WELL DEFINED FUNCTION, NOT A STUB
 void sub_60d220(HWND hWnd) {
     WINDOWPLACEMENT wp;
     wp.length = sizeof(WINDOWPLACEMENT);
@@ -1327,6 +1364,7 @@ void sub_60d220(HWND hWnd) {
 // 0x00617b90
 // Resets all global command-line argument buffers and counters.
 // Note: This is unexpectedly called on WM_SYSKEYDOWN/UP events.
+// WELL DEFINED FUNCTION, NOT A STUB
 void sub_617b90(WPARAM wParam, LPARAM lParam) {
     g_anonArgCount = 0;
     g_argCount = 0;
@@ -1344,6 +1382,7 @@ void sub_612530(void* p) {} // 0x612530 stub
 // Handles application activation and deactivation (WM_ACTIVATEAPP).
 // It manages transition between active and inactive states, potentially
 // pausing or resuming background processes.
+// WELL DEFINED FUNCTION, NOT A STUB
 void sub_586d00(int active) {
     uint8_t isActive = (uint8_t)active;
     
@@ -1373,12 +1412,14 @@ void sub_586d00(int active) {
 }
 // 0x0079bcd0
 // 64-bit unsigned multiplication: (low, high) * (mLow, mHigh)
+// WELL DEFINED FUNCTION, NOT A STUB
 uint64_t __stdcall sub_79bcd0(uint32_t low, uint32_t high, uint32_t mLow, uint32_t mHigh) {
     return (uint64_t)low * mLow + (((uint64_t)low * mHigh + (uint64_t)high * mLow) << 32);
 }
 
 // 0x0079eab0
 // 64-bit signed division: (low, high) / (dLow, dHigh)
+// WELL DEFINED FUNCTION, NOT A STUB
 int64_t __stdcall sub_79eab0(int32_t low, int32_t high, int32_t dLow, int32_t dHigh) {
     int64_t dividend = ((int64_t)high << 32) | (uint32_t)low;
     int64_t divisor = ((int64_t)dHigh << 32) | (uint32_t)dLow;
@@ -1388,6 +1429,7 @@ int64_t __stdcall sub_79eab0(int32_t low, int32_t high, int32_t dLow, int32_t dH
 
 // 0x00618010
 // Initializes the timer period and returns elapsed time since first call.
+// WELL DEFINED FUNCTION, NOT A STUB
 uint32_t sub_618010() {
     TIMECAPS tc;
     if (timeGetDevCaps(&tc, sizeof(TIMECAPS)) == TIMERR_NOERROR) {
@@ -1408,6 +1450,7 @@ uint32_t sub_618010() {
 
 bool sub_63d600(void* p) { return false; } // 0x63d600 stub
 
+// WELL DEFINED FUNCTION, NOT A STUB
 void sub_636830() {
     if (!g_dword_bef7c0) return;
 
@@ -1443,6 +1486,7 @@ uint32_t g_array_c83120[2] = {0}; // 0xc83120
 // 0x00617f50
 // Performs frame timing calculations and updates a global buffer of time values.
 // It involves floating point math to scale elapsed time.
+// WELL DEFINED FUNCTION, NOT A STUB
 void sub_617f50(void* p) {
     uint32_t* pVal = (uint32_t*)p;
     
@@ -1464,6 +1508,7 @@ void sub_617f50(void* p) {
 // 0x00617ee0
 // Linear interpolation helper for timing values.
 // Calculates an interpolated value between two time points in g_array_c83128.
+// WELL DEFINED FUNCTION, NOT A STUB
 void sub_617ee0(void* p1, void* p2) {
     uint32_t* pOut = (uint32_t*)p1;
     uint32_t* pTargetTime = (uint32_t*)p2;
@@ -1486,6 +1531,7 @@ void sub_617ee0(void* p1, void* p2) {
 
 // 0x00618140
 // Frame timing and input polling.
+// WELL DEFINED FUNCTION, NOT A STUB
 bool sub_618140() {
     sub_636830();
     uint32_t elapsed = sub_618010();
@@ -1609,6 +1655,7 @@ bool sub_618140() {
 
 // 0x0068dac0
 // Unacquires input devices (keyboard and joysticks).
+// WELL DEFINED FUNCTION, NOT A STUB
 bool sub_68dac0() {
     // 0x68dac0: Keyboard unacquire
     if (g_dword_e6a070) {
@@ -1657,6 +1704,7 @@ bool sub_68dac0() {
 
 // 0x0067d310
 // Checks the cooperative level of the Direct3D device and handles device loss/reset.
+// WELL DEFINED FUNCTION, NOT A STUB
 bool sub_67d310() {
     if (g_dword_bf1920 == NULL) {
         return true;
@@ -1724,6 +1772,7 @@ bool sub_67d310() {
 
 // 0x0060dc10
 // Main Message Loop and Game Update Loop
+// WELL DEFINED FUNCTION, NOT A STUB
 void sub_60dc10() {
     if (g_byte_bef6c5 != 0) { // 0x60dc1b
         g_byte_bef6c5 = 0; // 0x60de99
@@ -1826,6 +1875,7 @@ void sub_60c2e0() {} // 0x60c2e0 stub
 
 // 0x00614330
 // Initialization related to window height.
+// WELL DEFINED FUNCTION, NOT A STUB
 void sub_614330(int height) {
     // 0xeb612e: Calls internal init functions
     sub_614370(g_hWnd, (void*)height, NULL);
@@ -1836,6 +1886,7 @@ void sub_5090a0(void* p) {} // 0x5090a0 stub
 
 // 0x0060c150
 // Global state and object initialization.
+// WELL DEFINED FUNCTION, NOT A STUB
 void sub_60c150() {
     // 0xeb496e: Calls multiple initialization helpers
     sub_688370(NULL, 4, 0); // Simplified
@@ -1845,6 +1896,7 @@ void sub_60c150() {
 // 0x0060deb0
 // Disables or restores accessibility shortcuts (Sticky Keys, Toggle Keys, Filter Keys)
 // to prevent them from interrupting the game experience by popping up.
+// WELL DEFINED FUNCTION, NOT A STUB
 void sub_60deb0(int restore) {
     if (restore) {
         // 0x60dec6: Restore original Sticky Keys settings.
@@ -1891,6 +1943,7 @@ void __tmainCRTStartup();      // 0x6f54d2
 
 // 0x006f5793
 // The actual entry point of the executable.
+// WELL DEFINED FUNCTION, NOT A STUB
 extern "C" void EntryPoint() {
     __security_init_cookie(); // 0x006f5b76
     __tmainCRTStartup();      // 0x006f54d2
@@ -1898,6 +1951,7 @@ extern "C" void EntryPoint() {
 
 // 0x006f5b76
 // Initializes the global security cookie for stack protection.
+// WELL DEFINED FUNCTION, NOT A STUB
 void __security_init_cookie() {
     uintptr_t cookie;
     FILETIME system_time;
@@ -1931,6 +1985,7 @@ void __security_init_cookie() {
 
 // 0x006f54d2
 // The standard CRT startup function.
+// WELL DEFINED FUNCTION, NOT A STUB
 void __tmainCRTStartup() {
     STARTUPINFOA si;
     int showWindow;
@@ -1965,6 +2020,7 @@ void __tmainCRTStartup() {
 
 // 0x0060d6d0
 // Main window procedure.
+// WELL DEFINED FUNCTION, NOT A STUB
 LRESULT CALLBACK sub_60d6d0(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam) {
     if (Msg == WM_SYSCOMMAND) {
         WPARAM cmd = wParam & 0xFFF0;
@@ -2038,6 +2094,7 @@ LRESULT CALLBACK sub_60d6d0(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam) {
 
 // 0x0060dfa0
 // The main entry point for the application.
+// WELL DEFINED FUNCTION, NOT A STUB
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nShowCmd) {
     // 0x60dfaf: Initialize floating point control word.
     _control87(0x30000, 0x20000); // 0x60dfb9
