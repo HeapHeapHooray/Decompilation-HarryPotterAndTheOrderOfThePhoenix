@@ -89,6 +89,7 @@ void* g_dword_bef768 = NULL; // 0xbef768
 void* g_ptr_bef728 = NULL; // 0xbef728
 uint32_t g_onexit_begin = 0xFFFFFFFF; // 0xe76060
 uint32_t g_onexit_end = 0xFFFFFFFF;   // 0xe7605c
+uint8_t g_byte_8da939 = 0; // 0x8da939
 
 struct Struct_E6E870 {
     void* vtable; // 0xe6e870
@@ -137,6 +138,14 @@ extern "C" {
     __declspec(dllimport) void msvc_unlock(int locknum) __asm__("__unlock");
     __declspec(dllimport) _onexit_t msvc_dllonexit(_onexit_t pFunc, void** pBegin, void** pEnd) __asm__("___dllonexit");
 }
+
+// Forward declarations for newly added functions
+void sub_6f63f1(); // 0x6f63f1
+void sub_6f63ff(); // 0x6f63ff
+void* sub_6f7508(uint32_t field_C, int param); // 0x6f7508
+void* sub_6f7470(uint32_t field_C, int param); // 0x6f7470
+void* sub_6aaaa0(void* this_ptr, int param); // 0x6aaaa0
+void* sub_6a9330(void* this_ptr, int param); // 0x6a9330
 
 // 0x00617d70
 // Parses a single token from a string, handling quoted strings.
@@ -577,8 +586,35 @@ uint32_t sub_616590(void* p) {
     return maxVal;
 }
 uint32_t sub_618010(); // forward decl
-void sub_6aaaa0(int param) {} // 0x6aaaa0 stub
-void sub_6a9330(int param) {} // 0x6a9330 stub
+// 0x006aaaa0
+// Member function (originally using EAX for 'this').
+// Wraps sub_6f7508 with thread-safety.
+void* sub_6aaaa0(void* this_ptr, int param) {
+    if (!this_ptr) return NULL;
+    uint32_t field_C = *(uint32_t*)((char*)this_ptr + 0x0C);
+    if (field_C == 0xFFFFFFFF) return NULL;
+    
+    sub_6f63f1(); // Lock
+    void* result = sub_6f7508(field_C, param);
+    sub_6f63ff(); // Unlock
+    
+    return result;
+}
+
+// 0x006a9330
+// Member function (originally using EAX for 'this').
+// Wraps sub_6f7470 with thread-safety.
+void* sub_6a9330(void* this_ptr, int param) {
+    if (!this_ptr) return NULL;
+    uint32_t field_C = *(uint32_t*)((char*)this_ptr + 0x0C);
+    if (field_C == 0xFFFFFFFF) return NULL;
+    
+    sub_6f63f1(); // Lock
+    void* result = sub_6f7470(field_C, param);
+    sub_6f63ff(); // Unlock
+    
+    return result;
+}
 
 // 0x006a9f20
 // Updates timing and performance counters for an object.
@@ -628,14 +664,14 @@ void sub_6a9f20(void* p) {
     if (*(uint32_t*)(pObj + 0x48) == 0) {
         if (*(void**)pObj != NULL) {
             // 0xec684f: Call sub_6aaaa0(0x1000)
-            sub_6aaaa0(0x1000);
+            sub_6aaaa0(*(void**)pObj, 0x1000);
         }
     }
     
     // 0xec6854: Final conditional sub-update
     if (*(void**)(pObj + 0x70) != NULL) {
         // 0xec6860: Call sub_6a9330(0x1000)
-        sub_6a9330(0x1000);
+        sub_6a9330(*(void**)(pObj + 0x70), 0x1000);
     }
 }
 uint32_t g_state_c7b908 = 0; // 0xc7b908
@@ -745,6 +781,25 @@ void sub_6119c0(void* p) {} // 0x6119c0 stub
 void sub_6ace30() {} // 0x6ace30 stub
 void sub_6108c0() {} // 0x6108c0 stub
 void sub_6ac930() {} // 0x6ac930 stub
+
+// 0x006f63f1
+// Internal lock wrapper.
+void sub_6f63f1() {
+    // 0x6f63f1: Call EnterCriticalSection wrapper at 0x896dfc
+    // For now, we stub the actual OS call but maintain the flag logic.
+    g_byte_8da939++;
+}
+
+// 0x006f63ff
+// Internal unlock wrapper.
+void sub_6f63ff() {
+    // 0x6f63ff: Call LeaveCriticalSection wrapper at 0x896e00
+    g_byte_8da939--;
+}
+
+// Stubs for functions called by sub_6aaaa0 and sub_6a9330
+void* sub_6f7508(uint32_t field_C, int param) { return NULL; } // 0x6f7508 stub
+void* sub_6f7470(uint32_t field_C, int param) { return NULL; } // 0x6f7470 stub
 
 // 0x006a8f90
 // Performs general cleanup of global resources and handles.
