@@ -1130,6 +1130,7 @@ void sub_611ba0(void* p1, void* p2) {
         // 0x611bd5
         if (val) {
              if (*(uint32_t*)val) {
+                // TODO: Disassemble this.
                  // 0x611c0f (not disassembled, assuming return or similar)
              }
         }
