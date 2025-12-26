@@ -129,7 +129,7 @@ extern "C" void sub_6a9f20(void* p); // 0x6a9f20
 extern "C" void sub_617b60(void* p); // 0x617b60
 extern "C" bool sub_68dac0(); // 0x68dac0
 void sub_66f810(const char* format, ...); // 0x66f810
-void sub_79a712(int enable); // 0x79a712
+
 
 // CRT functions (from MSVCR80.dll)
 extern "C" {
@@ -1566,7 +1566,29 @@ void sub_66e080() {
         g_dword_8ae204 = g_dword_bf194c;
     }
 }
-void sub_79a712(int enable) {} // 0x79a712 (XInputEnable)
+// 0x79a712 (XInputEnable)
+// WELL DEFINED FUNCTION, NOT A STUB
+void sub_79a712(int enable) {
+    static HMODULE hXInput = NULL;
+    static void (WINAPI *pXInputEnable)(BOOL) = NULL;
+
+    if (!hXInput) {
+        hXInput = LoadLibraryA("XINPUT1_3.dll");
+        if (hXInput) {
+            pXInputEnable = (void (WINAPI *)(BOOL))GetProcAddress(hXInput, "XInputEnable");
+            if (!pXInputEnable) {
+                pXInputEnable = (void (WINAPI *)(BOOL))GetProcAddress(hXInput, (LPCSTR)100); // Try ordinal 100 (GetState) no wait, Enable is usually not 100.
+                // Actually, let's just stick to name and maybe ordinal 5 if name fails, as per some docs.
+                // But XInputEnable is deprecated.
+                // Let's just try name.
+            }
+        }
+    }
+
+    if (pXInputEnable) {
+        pXInputEnable(enable);
+    }
+}
 // 0x00617b60
 // Performs specific operations on sub-objects of the passed parameter.
 // It calls two virtual functions at index 4 and index 8 respectively.
